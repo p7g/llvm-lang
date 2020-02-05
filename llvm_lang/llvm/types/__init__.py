@@ -28,9 +28,8 @@ class IntType(Type):
 
     def verify(self):
         if self.size not in self.VALID_SIZES:
-            raise TypeError(
-                "Integer size must be one of: " + ", ".join(self.VALID_SIZES)
-            )
+            raise TypeError("Integer size must be one of: " +
+                            ", ".join(self.VALID_SIZES))
 
 
 @dataclass
@@ -41,7 +40,8 @@ class FloatType(Type):
 
     def verify(self):
         if self.size not in self.VALID_SIZES:
-            raise TypeError("Float size must be one of: " + ", ".join(self.VALID_SIZES))
+            raise TypeError("Float size must be one of: " +
+                            ", ".join(self.VALID_SIZES))
 
 
 @dataclass

@@ -4,7 +4,6 @@ from ply import lex, yacc
 
 from . import ast
 
-
 tokens = (
     "IDENTIFIER",
     "INTEGER",
@@ -53,12 +52,8 @@ t_ignore = " \t"
 
 def t_STRING(t):
     r'"(?:[^"\\]|\\["\\nt])*"'
-    t.value = (
-        t.value.replace('\\"', '"')
-        .replace("\\n", "\n")
-        .replace("\\t", "\t")
-        .replace("\\\\", "\\")
-    )
+    t.value = (t.value.replace('\\"', '"').replace("\\n", "\n").replace(
+        "\\t", "\t").replace("\\\\", "\\"))
     return t
 
 

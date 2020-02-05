@@ -4,11 +4,7 @@
 #
 #    pip-compile
 #
-appdirs==1.4.3            # via black
-attrs==19.3.0             # via black
 backcall==0.1.0           # via ipython
-black==19.10b0
-click==7.0                # via black
 decorator==4.4.1          # via ipython, traitlets
 ipython-genutils==0.2.0   # via traitlets
 ipython==7.11.1
@@ -18,7 +14,6 @@ mccabe==0.6.1             # via pylama
 mypy-extensions==0.4.3    # via mypy
 mypy==0.761
 parso==0.6.0              # via jedi
-pathspec==0.7.0           # via black
 pexpect==4.8.0            # via ipython
 pickleshare==0.7.5        # via ipython
 ply==3.11
@@ -29,14 +24,13 @@ pydocstyle==5.0.2         # via pylama
 pyflakes==2.1.1           # via pylama
 pygments==2.5.2           # via ipython
 pylama==7.7.1
-regex==2020.1.8           # via black
 six==1.14.0               # via traitlets
 snowballstemmer==2.0.0    # via pydocstyle
-toml==0.10.0              # via black
 traitlets==4.3.3          # via ipython
-typed-ast==1.4.1          # via black, mypy
+typed-ast==1.4.1          # via mypy
 typing-extensions==3.7.4.1  # via mypy
 wcwidth==0.1.8            # via prompt-toolkit
+yapf==0.29.0
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
