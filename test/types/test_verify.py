@@ -55,6 +55,19 @@ def test_enumtype_verify():
         typ2.verify()
 
 
+def test_generictype_verify():
+    typ = types.GenericType(type_parameters=(types.TypeVariable("T"),
+                                             types.TypeVariable("U")))
+
+    assert typ.verify() is None, "Generic with unique parameters is ok"
+
+    typ = types.GenericType(type_parameters=(types.TypeVariable("T"),
+                                             types.TypeVariable("T")))
+
+    with pytest.raises(types.TypeError):
+        typ.verify()
+
+
 def test_uniontype_verify():
     typ = types.UnionType("test_union",
                           variants=(
