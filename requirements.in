@@ -1,0 +1,7 @@
+llvmlite==0.31.0
+ply==3.11
+
+black
+pylama
+jedi
+ipython

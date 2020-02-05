@@ -1,0 +1,1082 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/ply)
+
+Unused terminals:
+
+    COMMENT
+    LEFT_BRACE
+    RIGHT_BRACE
+
+Grammar
+
+Rule 0     S' -> program
+Rule 1     program -> statement
+Rule 2     program -> program statement
+Rule 3     statement -> expression SEMICOLON
+Rule 4     expression -> expression EQUAL expression
+Rule 5     expression -> expression PLUS expression
+Rule 6     expression -> expression MINUS expression
+Rule 7     expression -> expression STAR expression
+Rule 8     expression -> expression SLASH expression
+Rule 9     expression -> LEFT_PAREN expression RIGHT_PAREN
+Rule 10    expression -> MINUS expression
+Rule 11    expression -> INTEGER
+Rule 12    expression -> REAL
+Rule 13    expression -> STRING
+Rule 14    expression -> expression LEFT_PAREN expression_list RIGHT_PAREN
+Rule 15    expression -> AMPERSAND expression
+Rule 16    expression -> assignment_target
+Rule 17    assignment_target -> IDENTIFIER
+Rule 18    assignment_target -> expression LEFT_BRACKET expression RIGHT_BRACKET
+Rule 19    assignment_target -> STAR expression
+Rule 20    expression_list -> empty
+Rule 21    expression_list -> expression
+Rule 22    expression_list -> expression COMMA expression_list
+Rule 23    empty -> <empty>
+
+Terminals, with rules where they appear
+
+AMPERSAND            : 15
+COMMA                : 22
+COMMENT              : 
+EQUAL                : 4
+IDENTIFIER           : 17
+INTEGER              : 11
+LEFT_BRACE           : 
+LEFT_BRACKET         : 18
+LEFT_PAREN           : 9 14
+MINUS                : 6 10
+PLUS                 : 5
+REAL                 : 12
+RIGHT_BRACE          : 
+RIGHT_BRACKET        : 18
+RIGHT_PAREN          : 9 14
+SEMICOLON            : 3
+SLASH                : 8
+STAR                 : 7 19
+STRING               : 13
+error                : 
+
+Nonterminals, with rules where they appear
+
+assignment_target    : 16
+empty                : 20
+expression           : 3 4 4 5 5 6 6 7 7 8 8 9 10 14 15 18 18 19 21 22
+expression_list      : 14 22
+program              : 2 0
+statement            : 1 2
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . program
+    (1) program -> . statement
+    (2) program -> . program statement
+    (3) statement -> . expression SEMICOLON
+    (4) expression -> . expression EQUAL expression
+    (5) expression -> . expression PLUS expression
+    (6) expression -> . expression MINUS expression
+    (7) expression -> . expression STAR expression
+    (8) expression -> . expression SLASH expression
+    (9) expression -> . LEFT_PAREN expression RIGHT_PAREN
+    (10) expression -> . MINUS expression
+    (11) expression -> . INTEGER
+    (12) expression -> . REAL
+    (13) expression -> . STRING
+    (14) expression -> . expression LEFT_PAREN expression_list RIGHT_PAREN
+    (15) expression -> . AMPERSAND expression
+    (16) expression -> . assignment_target
+    (17) assignment_target -> . IDENTIFIER
+    (18) assignment_target -> . expression LEFT_BRACKET expression RIGHT_BRACKET
+    (19) assignment_target -> . STAR expression
+
+    LEFT_PAREN      shift and go to state 6
+    MINUS           shift and go to state 4
+    INTEGER         shift and go to state 7
+    REAL            shift and go to state 8
+    STRING          shift and go to state 9
+    AMPERSAND       shift and go to state 10
+    IDENTIFIER      shift and go to state 12
+    STAR            shift and go to state 5
+
+    program                        shift and go to state 1
+    statement                      shift and go to state 2
+    expression                     shift and go to state 3
+    assignment_target              shift and go to state 11
+
+state 1
+
+    (0) S' -> program .
+    (2) program -> program . statement
+    (3) statement -> . expression SEMICOLON
+    (4) expression -> . expression EQUAL expression
+    (5) expression -> . expression PLUS expression
+    (6) expression -> . expression MINUS expression
+    (7) expression -> . expression STAR expression
+    (8) expression -> . expression SLASH expression
+    (9) expression -> . LEFT_PAREN expression RIGHT_PAREN
+    (10) expression -> . MINUS expression
+    (11) expression -> . INTEGER
+    (12) expression -> . REAL
+    (13) expression -> . STRING
+    (14) expression -> . expression LEFT_PAREN expression_list RIGHT_PAREN
+    (15) expression -> . AMPERSAND expression
+    (16) expression -> . assignment_target
+    (17) assignment_target -> . IDENTIFIER
+    (18) assignment_target -> . expression LEFT_BRACKET expression RIGHT_BRACKET
+    (19) assignment_target -> . STAR expression
+
+    LEFT_PAREN      shift and go to state 6
+    MINUS           shift and go to state 4
+    INTEGER         shift and go to state 7
+    REAL            shift and go to state 8
+    STRING          shift and go to state 9
+    AMPERSAND       shift and go to state 10
+    IDENTIFIER      shift and go to state 12
+    STAR            shift and go to state 5
+
+    statement                      shift and go to state 13
+    expression                     shift and go to state 3
+    assignment_target              shift and go to state 11
+
+state 2
+
+    (1) program -> statement .
+
+    LEFT_PAREN      reduce using rule 1 (program -> statement .)
+    MINUS           reduce using rule 1 (program -> statement .)
+    INTEGER         reduce using rule 1 (program -> statement .)
+    REAL            reduce using rule 1 (program -> statement .)
+    STRING          reduce using rule 1 (program -> statement .)
+    AMPERSAND       reduce using rule 1 (program -> statement .)
+    IDENTIFIER      reduce using rule 1 (program -> statement .)
+    STAR            reduce using rule 1 (program -> statement .)
+    $end            reduce using rule 1 (program -> statement .)
+
+
+state 3
+
+    (3) statement -> expression . SEMICOLON
+    (4) expression -> expression . EQUAL expression
+    (5) expression -> expression . PLUS expression
+    (6) expression -> expression . MINUS expression
+    (7) expression -> expression . STAR expression
+    (8) expression -> expression . SLASH expression
+    (14) expression -> expression . LEFT_PAREN expression_list RIGHT_PAREN
+    (18) assignment_target -> expression . LEFT_BRACKET expression RIGHT_BRACKET
+
+    SEMICOLON       shift and go to state 14
+    EQUAL           shift and go to state 15
+    PLUS            shift and go to state 16
+    MINUS           shift and go to state 17
+    STAR            shift and go to state 18
+    SLASH           shift and go to state 19
+    LEFT_PAREN      shift and go to state 20
+    LEFT_BRACKET    shift and go to state 21
+
+
+state 4
+
+    (10) expression -> MINUS . expression
+    (4) expression -> . expression EQUAL expression
+    (5) expression -> . expression PLUS expression
+    (6) expression -> . expression MINUS expression
+    (7) expression -> . expression STAR expression
+    (8) expression -> . expression SLASH expression
+    (9) expression -> . LEFT_PAREN expression RIGHT_PAREN
+    (10) expression -> . MINUS expression
+    (11) expression -> . INTEGER
+    (12) expression -> . REAL
+    (13) expression -> . STRING
+    (14) expression -> . expression LEFT_PAREN expression_list RIGHT_PAREN
+    (15) expression -> . AMPERSAND expression
+    (16) expression -> . assignment_target
+    (17) assignment_target -> . IDENTIFIER
+    (18) assignment_target -> . expression LEFT_BRACKET expression RIGHT_BRACKET
+    (19) assignment_target -> . STAR expression
+
+    LEFT_PAREN      shift and go to state 6
+    MINUS           shift and go to state 4
+    INTEGER         shift and go to state 7
+    REAL            shift and go to state 8
+    STRING          shift and go to state 9
+    AMPERSAND       shift and go to state 10
+    IDENTIFIER      shift and go to state 12
+    STAR            shift and go to state 5
+
+    expression                     shift and go to state 22
+    assignment_target              shift and go to state 11
+
+state 5
+
+    (19) assignment_target -> STAR . expression
+    (4) expression -> . expression EQUAL expression
+    (5) expression -> . expression PLUS expression
+    (6) expression -> . expression MINUS expression
+    (7) expression -> . expression STAR expression
+    (8) expression -> . expression SLASH expression
+    (9) expression -> . LEFT_PAREN expression RIGHT_PAREN
+    (10) expression -> . MINUS expression
+    (11) expression -> . INTEGER
+    (12) expression -> . REAL
+    (13) expression -> . STRING
+    (14) expression -> . expression LEFT_PAREN expression_list RIGHT_PAREN
+    (15) expression -> . AMPERSAND expression
+    (16) expression -> . assignment_target
+    (17) assignment_target -> . IDENTIFIER
+    (18) assignment_target -> . expression LEFT_BRACKET expression RIGHT_BRACKET
+    (19) assignment_target -> . STAR expression
+
+    LEFT_PAREN      shift and go to state 6
+    MINUS           shift and go to state 4
+    INTEGER         shift and go to state 7
+    REAL            shift and go to state 8
+    STRING          shift and go to state 9
+    AMPERSAND       shift and go to state 10
+    IDENTIFIER      shift and go to state 12
+    STAR            shift and go to state 5
+
+    expression                     shift and go to state 23
+    assignment_target              shift and go to state 11
+
+state 6
+
+    (9) expression -> LEFT_PAREN . expression RIGHT_PAREN
+    (4) expression -> . expression EQUAL expression
+    (5) expression -> . expression PLUS expression
+    (6) expression -> . expression MINUS expression
+    (7) expression -> . expression STAR expression
+    (8) expression -> . expression SLASH expression
+    (9) expression -> . LEFT_PAREN expression RIGHT_PAREN
+    (10) expression -> . MINUS expression
+    (11) expression -> . INTEGER
+    (12) expression -> . REAL
+    (13) expression -> . STRING
+    (14) expression -> . expression LEFT_PAREN expression_list RIGHT_PAREN
+    (15) expression -> . AMPERSAND expression
+    (16) expression -> . assignment_target
+    (17) assignment_target -> . IDENTIFIER
+    (18) assignment_target -> . expression LEFT_BRACKET expression RIGHT_BRACKET
+    (19) assignment_target -> . STAR expression
+
+    LEFT_PAREN      shift and go to state 6
+    MINUS           shift and go to state 4
+    INTEGER         shift and go to state 7
+    REAL            shift and go to state 8
+    STRING          shift and go to state 9
+    AMPERSAND       shift and go to state 10
+    IDENTIFIER      shift and go to state 12
+    STAR            shift and go to state 5
+
+    expression                     shift and go to state 24
+    assignment_target              shift and go to state 11
+
+state 7
+
+    (11) expression -> INTEGER .
+
+    SEMICOLON       reduce using rule 11 (expression -> INTEGER .)
+    EQUAL           reduce using rule 11 (expression -> INTEGER .)
+    PLUS            reduce using rule 11 (expression -> INTEGER .)
+    MINUS           reduce using rule 11 (expression -> INTEGER .)
+    STAR            reduce using rule 11 (expression -> INTEGER .)
+    SLASH           reduce using rule 11 (expression -> INTEGER .)
+    LEFT_PAREN      reduce using rule 11 (expression -> INTEGER .)
+    LEFT_BRACKET    reduce using rule 11 (expression -> INTEGER .)
+    RIGHT_PAREN     reduce using rule 11 (expression -> INTEGER .)
+    COMMA           reduce using rule 11 (expression -> INTEGER .)
+    RIGHT_BRACKET   reduce using rule 11 (expression -> INTEGER .)
+
+
+state 8
+
+    (12) expression -> REAL .
+
+    SEMICOLON       reduce using rule 12 (expression -> REAL .)
+    EQUAL           reduce using rule 12 (expression -> REAL .)
+    PLUS            reduce using rule 12 (expression -> REAL .)
+    MINUS           reduce using rule 12 (expression -> REAL .)
+    STAR            reduce using rule 12 (expression -> REAL .)
+    SLASH           reduce using rule 12 (expression -> REAL .)
+    LEFT_PAREN      reduce using rule 12 (expression -> REAL .)
+    LEFT_BRACKET    reduce using rule 12 (expression -> REAL .)
+    RIGHT_PAREN     reduce using rule 12 (expression -> REAL .)
+    COMMA           reduce using rule 12 (expression -> REAL .)
+    RIGHT_BRACKET   reduce using rule 12 (expression -> REAL .)
+
+
+state 9
+
+    (13) expression -> STRING .
+
+    SEMICOLON       reduce using rule 13 (expression -> STRING .)
+    EQUAL           reduce using rule 13 (expression -> STRING .)
+    PLUS            reduce using rule 13 (expression -> STRING .)
+    MINUS           reduce using rule 13 (expression -> STRING .)
+    STAR            reduce using rule 13 (expression -> STRING .)
+    SLASH           reduce using rule 13 (expression -> STRING .)
+    LEFT_PAREN      reduce using rule 13 (expression -> STRING .)
+    LEFT_BRACKET    reduce using rule 13 (expression -> STRING .)
+    RIGHT_PAREN     reduce using rule 13 (expression -> STRING .)
+    COMMA           reduce using rule 13 (expression -> STRING .)
+    RIGHT_BRACKET   reduce using rule 13 (expression -> STRING .)
+
+
+state 10
+
+    (15) expression -> AMPERSAND . expression
+    (4) expression -> . expression EQUAL expression
+    (5) expression -> . expression PLUS expression
+    (6) expression -> . expression MINUS expression
+    (7) expression -> . expression STAR expression
+    (8) expression -> . expression SLASH expression
+    (9) expression -> . LEFT_PAREN expression RIGHT_PAREN
+    (10) expression -> . MINUS expression
+    (11) expression -> . INTEGER
+    (12) expression -> . REAL
+    (13) expression -> . STRING
+    (14) expression -> . expression LEFT_PAREN expression_list RIGHT_PAREN
+    (15) expression -> . AMPERSAND expression
+    (16) expression -> . assignment_target
+    (17) assignment_target -> . IDENTIFIER
+    (18) assignment_target -> . expression LEFT_BRACKET expression RIGHT_BRACKET
+    (19) assignment_target -> . STAR expression
+
+    LEFT_PAREN      shift and go to state 6
+    MINUS           shift and go to state 4
+    INTEGER         shift and go to state 7
+    REAL            shift and go to state 8
+    STRING          shift and go to state 9
+    AMPERSAND       shift and go to state 10
+    IDENTIFIER      shift and go to state 12
+    STAR            shift and go to state 5
+
+    expression                     shift and go to state 25
+    assignment_target              shift and go to state 11
+
+state 11
+
+    (16) expression -> assignment_target .
+
+    SEMICOLON       reduce using rule 16 (expression -> assignment_target .)
+    EQUAL           reduce using rule 16 (expression -> assignment_target .)
+    PLUS            reduce using rule 16 (expression -> assignment_target .)
+    MINUS           reduce using rule 16 (expression -> assignment_target .)
+    STAR            reduce using rule 16 (expression -> assignment_target .)
+    SLASH           reduce using rule 16 (expression -> assignment_target .)
+    LEFT_PAREN      reduce using rule 16 (expression -> assignment_target .)
+    LEFT_BRACKET    reduce using rule 16 (expression -> assignment_target .)
+    RIGHT_PAREN     reduce using rule 16 (expression -> assignment_target .)
+    COMMA           reduce using rule 16 (expression -> assignment_target .)
+    RIGHT_BRACKET   reduce using rule 16 (expression -> assignment_target .)
+
+
+state 12
+
+    (17) assignment_target -> IDENTIFIER .
+
+    SEMICOLON       reduce using rule 17 (assignment_target -> IDENTIFIER .)
+    EQUAL           reduce using rule 17 (assignment_target -> IDENTIFIER .)
+    PLUS            reduce using rule 17 (assignment_target -> IDENTIFIER .)
+    MINUS           reduce using rule 17 (assignment_target -> IDENTIFIER .)
+    STAR            reduce using rule 17 (assignment_target -> IDENTIFIER .)
+    SLASH           reduce using rule 17 (assignment_target -> IDENTIFIER .)
+    LEFT_PAREN      reduce using rule 17 (assignment_target -> IDENTIFIER .)
+    LEFT_BRACKET    reduce using rule 17 (assignment_target -> IDENTIFIER .)
+    RIGHT_PAREN     reduce using rule 17 (assignment_target -> IDENTIFIER .)
+    COMMA           reduce using rule 17 (assignment_target -> IDENTIFIER .)
+    RIGHT_BRACKET   reduce using rule 17 (assignment_target -> IDENTIFIER .)
+
+
+state 13
+
+    (2) program -> program statement .
+
+    LEFT_PAREN      reduce using rule 2 (program -> program statement .)
+    MINUS           reduce using rule 2 (program -> program statement .)
+    INTEGER         reduce using rule 2 (program -> program statement .)
+    REAL            reduce using rule 2 (program -> program statement .)
+    STRING          reduce using rule 2 (program -> program statement .)
+    AMPERSAND       reduce using rule 2 (program -> program statement .)
+    IDENTIFIER      reduce using rule 2 (program -> program statement .)
+    STAR            reduce using rule 2 (program -> program statement .)
+    $end            reduce using rule 2 (program -> program statement .)
+
+
+state 14
+
+    (3) statement -> expression SEMICOLON .
+
+    LEFT_PAREN      reduce using rule 3 (statement -> expression SEMICOLON .)
+    MINUS           reduce using rule 3 (statement -> expression SEMICOLON .)
+    INTEGER         reduce using rule 3 (statement -> expression SEMICOLON .)
+    REAL            reduce using rule 3 (statement -> expression SEMICOLON .)
+    STRING          reduce using rule 3 (statement -> expression SEMICOLON .)
+    AMPERSAND       reduce using rule 3 (statement -> expression SEMICOLON .)
+    IDENTIFIER      reduce using rule 3 (statement -> expression SEMICOLON .)
+    STAR            reduce using rule 3 (statement -> expression SEMICOLON .)
+    $end            reduce using rule 3 (statement -> expression SEMICOLON .)
+
+
+state 15
+
+    (4) expression -> expression EQUAL . expression
+    (4) expression -> . expression EQUAL expression
+    (5) expression -> . expression PLUS expression
+    (6) expression -> . expression MINUS expression
+    (7) expression -> . expression STAR expression
+    (8) expression -> . expression SLASH expression
+    (9) expression -> . LEFT_PAREN expression RIGHT_PAREN
+    (10) expression -> . MINUS expression
+    (11) expression -> . INTEGER
+    (12) expression -> . REAL
+    (13) expression -> . STRING
+    (14) expression -> . expression LEFT_PAREN expression_list RIGHT_PAREN
+    (15) expression -> . AMPERSAND expression
+    (16) expression -> . assignment_target
+    (17) assignment_target -> . IDENTIFIER
+    (18) assignment_target -> . expression LEFT_BRACKET expression RIGHT_BRACKET
+    (19) assignment_target -> . STAR expression
+
+    LEFT_PAREN      shift and go to state 6
+    MINUS           shift and go to state 4
+    INTEGER         shift and go to state 7
+    REAL            shift and go to state 8
+    STRING          shift and go to state 9
+    AMPERSAND       shift and go to state 10
+    IDENTIFIER      shift and go to state 12
+    STAR            shift and go to state 5
+
+    expression                     shift and go to state 26
+    assignment_target              shift and go to state 11
+
+state 16
+
+    (5) expression -> expression PLUS . expression
+    (4) expression -> . expression EQUAL expression
+    (5) expression -> . expression PLUS expression
+    (6) expression -> . expression MINUS expression
+    (7) expression -> . expression STAR expression
+    (8) expression -> . expression SLASH expression
+    (9) expression -> . LEFT_PAREN expression RIGHT_PAREN
+    (10) expression -> . MINUS expression
+    (11) expression -> . INTEGER
+    (12) expression -> . REAL
+    (13) expression -> . STRING
+    (14) expression -> . expression LEFT_PAREN expression_list RIGHT_PAREN
+    (15) expression -> . AMPERSAND expression
+    (16) expression -> . assignment_target
+    (17) assignment_target -> . IDENTIFIER
+    (18) assignment_target -> . expression LEFT_BRACKET expression RIGHT_BRACKET
+    (19) assignment_target -> . STAR expression
+
+    LEFT_PAREN      shift and go to state 6
+    MINUS           shift and go to state 4
+    INTEGER         shift and go to state 7
+    REAL            shift and go to state 8
+    STRING          shift and go to state 9
+    AMPERSAND       shift and go to state 10
+    IDENTIFIER      shift and go to state 12
+    STAR            shift and go to state 5
+
+    expression                     shift and go to state 27
+    assignment_target              shift and go to state 11
+
+state 17
+
+    (6) expression -> expression MINUS . expression
+    (4) expression -> . expression EQUAL expression
+    (5) expression -> . expression PLUS expression
+    (6) expression -> . expression MINUS expression
+    (7) expression -> . expression STAR expression
+    (8) expression -> . expression SLASH expression
+    (9) expression -> . LEFT_PAREN expression RIGHT_PAREN
+    (10) expression -> . MINUS expression
+    (11) expression -> . INTEGER
+    (12) expression -> . REAL
+    (13) expression -> . STRING
+    (14) expression -> . expression LEFT_PAREN expression_list RIGHT_PAREN
+    (15) expression -> . AMPERSAND expression
+    (16) expression -> . assignment_target
+    (17) assignment_target -> . IDENTIFIER
+    (18) assignment_target -> . expression LEFT_BRACKET expression RIGHT_BRACKET
+    (19) assignment_target -> . STAR expression
+
+    LEFT_PAREN      shift and go to state 6
+    MINUS           shift and go to state 4
+    INTEGER         shift and go to state 7
+    REAL            shift and go to state 8
+    STRING          shift and go to state 9
+    AMPERSAND       shift and go to state 10
+    IDENTIFIER      shift and go to state 12
+    STAR            shift and go to state 5
+
+    expression                     shift and go to state 28
+    assignment_target              shift and go to state 11
+
+state 18
+
+    (7) expression -> expression STAR . expression
+    (4) expression -> . expression EQUAL expression
+    (5) expression -> . expression PLUS expression
+    (6) expression -> . expression MINUS expression
+    (7) expression -> . expression STAR expression
+    (8) expression -> . expression SLASH expression
+    (9) expression -> . LEFT_PAREN expression RIGHT_PAREN
+    (10) expression -> . MINUS expression
+    (11) expression -> . INTEGER
+    (12) expression -> . REAL
+    (13) expression -> . STRING
+    (14) expression -> . expression LEFT_PAREN expression_list RIGHT_PAREN
+    (15) expression -> . AMPERSAND expression
+    (16) expression -> . assignment_target
+    (17) assignment_target -> . IDENTIFIER
+    (18) assignment_target -> . expression LEFT_BRACKET expression RIGHT_BRACKET
+    (19) assignment_target -> . STAR expression
+
+    LEFT_PAREN      shift and go to state 6
+    MINUS           shift and go to state 4
+    INTEGER         shift and go to state 7
+    REAL            shift and go to state 8
+    STRING          shift and go to state 9
+    AMPERSAND       shift and go to state 10
+    IDENTIFIER      shift and go to state 12
+    STAR            shift and go to state 5
+
+    expression                     shift and go to state 29
+    assignment_target              shift and go to state 11
+
+state 19
+
+    (8) expression -> expression SLASH . expression
+    (4) expression -> . expression EQUAL expression
+    (5) expression -> . expression PLUS expression
+    (6) expression -> . expression MINUS expression
+    (7) expression -> . expression STAR expression
+    (8) expression -> . expression SLASH expression
+    (9) expression -> . LEFT_PAREN expression RIGHT_PAREN
+    (10) expression -> . MINUS expression
+    (11) expression -> . INTEGER
+    (12) expression -> . REAL
+    (13) expression -> . STRING
+    (14) expression -> . expression LEFT_PAREN expression_list RIGHT_PAREN
+    (15) expression -> . AMPERSAND expression
+    (16) expression -> . assignment_target
+    (17) assignment_target -> . IDENTIFIER
+    (18) assignment_target -> . expression LEFT_BRACKET expression RIGHT_BRACKET
+    (19) assignment_target -> . STAR expression
+
+    LEFT_PAREN      shift and go to state 6
+    MINUS           shift and go to state 4
+    INTEGER         shift and go to state 7
+    REAL            shift and go to state 8
+    STRING          shift and go to state 9
+    AMPERSAND       shift and go to state 10
+    IDENTIFIER      shift and go to state 12
+    STAR            shift and go to state 5
+
+    expression                     shift and go to state 30
+    assignment_target              shift and go to state 11
+
+state 20
+
+    (14) expression -> expression LEFT_PAREN . expression_list RIGHT_PAREN
+    (20) expression_list -> . empty
+    (21) expression_list -> . expression
+    (22) expression_list -> . expression COMMA expression_list
+    (23) empty -> .
+    (4) expression -> . expression EQUAL expression
+    (5) expression -> . expression PLUS expression
+    (6) expression -> . expression MINUS expression
+    (7) expression -> . expression STAR expression
+    (8) expression -> . expression SLASH expression
+    (9) expression -> . LEFT_PAREN expression RIGHT_PAREN
+    (10) expression -> . MINUS expression
+    (11) expression -> . INTEGER
+    (12) expression -> . REAL
+    (13) expression -> . STRING
+    (14) expression -> . expression LEFT_PAREN expression_list RIGHT_PAREN
+    (15) expression -> . AMPERSAND expression
+    (16) expression -> . assignment_target
+    (17) assignment_target -> . IDENTIFIER
+    (18) assignment_target -> . expression LEFT_BRACKET expression RIGHT_BRACKET
+    (19) assignment_target -> . STAR expression
+
+    RIGHT_PAREN     reduce using rule 23 (empty -> .)
+    LEFT_PAREN      shift and go to state 6
+    MINUS           shift and go to state 4
+    INTEGER         shift and go to state 7
+    REAL            shift and go to state 8
+    STRING          shift and go to state 9
+    AMPERSAND       shift and go to state 10
+    IDENTIFIER      shift and go to state 12
+    STAR            shift and go to state 5
+
+    expression                     shift and go to state 31
+    expression_list                shift and go to state 32
+    empty                          shift and go to state 33
+    assignment_target              shift and go to state 11
+
+state 21
+
+    (18) assignment_target -> expression LEFT_BRACKET . expression RIGHT_BRACKET
+    (4) expression -> . expression EQUAL expression
+    (5) expression -> . expression PLUS expression
+    (6) expression -> . expression MINUS expression
+    (7) expression -> . expression STAR expression
+    (8) expression -> . expression SLASH expression
+    (9) expression -> . LEFT_PAREN expression RIGHT_PAREN
+    (10) expression -> . MINUS expression
+    (11) expression -> . INTEGER
+    (12) expression -> . REAL
+    (13) expression -> . STRING
+    (14) expression -> . expression LEFT_PAREN expression_list RIGHT_PAREN
+    (15) expression -> . AMPERSAND expression
+    (16) expression -> . assignment_target
+    (17) assignment_target -> . IDENTIFIER
+    (18) assignment_target -> . expression LEFT_BRACKET expression RIGHT_BRACKET
+    (19) assignment_target -> . STAR expression
+
+    LEFT_PAREN      shift and go to state 6
+    MINUS           shift and go to state 4
+    INTEGER         shift and go to state 7
+    REAL            shift and go to state 8
+    STRING          shift and go to state 9
+    AMPERSAND       shift and go to state 10
+    IDENTIFIER      shift and go to state 12
+    STAR            shift and go to state 5
+
+    expression                     shift and go to state 34
+    assignment_target              shift and go to state 11
+
+state 22
+
+    (10) expression -> MINUS expression .
+    (4) expression -> expression . EQUAL expression
+    (5) expression -> expression . PLUS expression
+    (6) expression -> expression . MINUS expression
+    (7) expression -> expression . STAR expression
+    (8) expression -> expression . SLASH expression
+    (14) expression -> expression . LEFT_PAREN expression_list RIGHT_PAREN
+    (18) assignment_target -> expression . LEFT_BRACKET expression RIGHT_BRACKET
+
+    SEMICOLON       reduce using rule 10 (expression -> MINUS expression .)
+    EQUAL           reduce using rule 10 (expression -> MINUS expression .)
+    PLUS            reduce using rule 10 (expression -> MINUS expression .)
+    MINUS           reduce using rule 10 (expression -> MINUS expression .)
+    STAR            reduce using rule 10 (expression -> MINUS expression .)
+    SLASH           reduce using rule 10 (expression -> MINUS expression .)
+    LEFT_PAREN      reduce using rule 10 (expression -> MINUS expression .)
+    LEFT_BRACKET    reduce using rule 10 (expression -> MINUS expression .)
+    RIGHT_PAREN     reduce using rule 10 (expression -> MINUS expression .)
+    COMMA           reduce using rule 10 (expression -> MINUS expression .)
+    RIGHT_BRACKET   reduce using rule 10 (expression -> MINUS expression .)
+
+  ! EQUAL           [ shift and go to state 15 ]
+  ! PLUS            [ shift and go to state 16 ]
+  ! MINUS           [ shift and go to state 17 ]
+  ! STAR            [ shift and go to state 18 ]
+  ! SLASH           [ shift and go to state 19 ]
+  ! LEFT_PAREN      [ shift and go to state 20 ]
+  ! LEFT_BRACKET    [ shift and go to state 21 ]
+
+
+state 23
+
+    (19) assignment_target -> STAR expression .
+    (4) expression -> expression . EQUAL expression
+    (5) expression -> expression . PLUS expression
+    (6) expression -> expression . MINUS expression
+    (7) expression -> expression . STAR expression
+    (8) expression -> expression . SLASH expression
+    (14) expression -> expression . LEFT_PAREN expression_list RIGHT_PAREN
+    (18) assignment_target -> expression . LEFT_BRACKET expression RIGHT_BRACKET
+
+    SEMICOLON       reduce using rule 19 (assignment_target -> STAR expression .)
+    EQUAL           reduce using rule 19 (assignment_target -> STAR expression .)
+    PLUS            reduce using rule 19 (assignment_target -> STAR expression .)
+    MINUS           reduce using rule 19 (assignment_target -> STAR expression .)
+    STAR            reduce using rule 19 (assignment_target -> STAR expression .)
+    SLASH           reduce using rule 19 (assignment_target -> STAR expression .)
+    LEFT_PAREN      reduce using rule 19 (assignment_target -> STAR expression .)
+    LEFT_BRACKET    reduce using rule 19 (assignment_target -> STAR expression .)
+    RIGHT_PAREN     reduce using rule 19 (assignment_target -> STAR expression .)
+    COMMA           reduce using rule 19 (assignment_target -> STAR expression .)
+    RIGHT_BRACKET   reduce using rule 19 (assignment_target -> STAR expression .)
+
+  ! EQUAL           [ shift and go to state 15 ]
+  ! PLUS            [ shift and go to state 16 ]
+  ! MINUS           [ shift and go to state 17 ]
+  ! STAR            [ shift and go to state 18 ]
+  ! SLASH           [ shift and go to state 19 ]
+  ! LEFT_PAREN      [ shift and go to state 20 ]
+  ! LEFT_BRACKET    [ shift and go to state 21 ]
+
+
+state 24
+
+    (9) expression -> LEFT_PAREN expression . RIGHT_PAREN
+    (4) expression -> expression . EQUAL expression
+    (5) expression -> expression . PLUS expression
+    (6) expression -> expression . MINUS expression
+    (7) expression -> expression . STAR expression
+    (8) expression -> expression . SLASH expression
+    (14) expression -> expression . LEFT_PAREN expression_list RIGHT_PAREN
+    (18) assignment_target -> expression . LEFT_BRACKET expression RIGHT_BRACKET
+
+    RIGHT_PAREN     shift and go to state 35
+    EQUAL           shift and go to state 15
+    PLUS            shift and go to state 16
+    MINUS           shift and go to state 17
+    STAR            shift and go to state 18
+    SLASH           shift and go to state 19
+    LEFT_PAREN      shift and go to state 20
+    LEFT_BRACKET    shift and go to state 21
+
+
+state 25
+
+    (15) expression -> AMPERSAND expression .
+    (4) expression -> expression . EQUAL expression
+    (5) expression -> expression . PLUS expression
+    (6) expression -> expression . MINUS expression
+    (7) expression -> expression . STAR expression
+    (8) expression -> expression . SLASH expression
+    (14) expression -> expression . LEFT_PAREN expression_list RIGHT_PAREN
+    (18) assignment_target -> expression . LEFT_BRACKET expression RIGHT_BRACKET
+
+    SEMICOLON       reduce using rule 15 (expression -> AMPERSAND expression .)
+    EQUAL           reduce using rule 15 (expression -> AMPERSAND expression .)
+    PLUS            reduce using rule 15 (expression -> AMPERSAND expression .)
+    MINUS           reduce using rule 15 (expression -> AMPERSAND expression .)
+    STAR            reduce using rule 15 (expression -> AMPERSAND expression .)
+    SLASH           reduce using rule 15 (expression -> AMPERSAND expression .)
+    LEFT_PAREN      reduce using rule 15 (expression -> AMPERSAND expression .)
+    LEFT_BRACKET    reduce using rule 15 (expression -> AMPERSAND expression .)
+    RIGHT_PAREN     reduce using rule 15 (expression -> AMPERSAND expression .)
+    COMMA           reduce using rule 15 (expression -> AMPERSAND expression .)
+    RIGHT_BRACKET   reduce using rule 15 (expression -> AMPERSAND expression .)
+
+  ! EQUAL           [ shift and go to state 15 ]
+  ! PLUS            [ shift and go to state 16 ]
+  ! MINUS           [ shift and go to state 17 ]
+  ! STAR            [ shift and go to state 18 ]
+  ! SLASH           [ shift and go to state 19 ]
+  ! LEFT_PAREN      [ shift and go to state 20 ]
+  ! LEFT_BRACKET    [ shift and go to state 21 ]
+
+
+state 26
+
+    (4) expression -> expression EQUAL expression .
+    (4) expression -> expression . EQUAL expression
+    (5) expression -> expression . PLUS expression
+    (6) expression -> expression . MINUS expression
+    (7) expression -> expression . STAR expression
+    (8) expression -> expression . SLASH expression
+    (14) expression -> expression . LEFT_PAREN expression_list RIGHT_PAREN
+    (18) assignment_target -> expression . LEFT_BRACKET expression RIGHT_BRACKET
+
+    SEMICOLON       reduce using rule 4 (expression -> expression EQUAL expression .)
+    LEFT_PAREN      reduce using rule 4 (expression -> expression EQUAL expression .)
+    LEFT_BRACKET    reduce using rule 4 (expression -> expression EQUAL expression .)
+    RIGHT_PAREN     reduce using rule 4 (expression -> expression EQUAL expression .)
+    COMMA           reduce using rule 4 (expression -> expression EQUAL expression .)
+    RIGHT_BRACKET   reduce using rule 4 (expression -> expression EQUAL expression .)
+    EQUAL           shift and go to state 15
+    PLUS            shift and go to state 16
+    MINUS           shift and go to state 17
+    STAR            shift and go to state 18
+    SLASH           shift and go to state 19
+
+  ! EQUAL           [ reduce using rule 4 (expression -> expression EQUAL expression .) ]
+  ! PLUS            [ reduce using rule 4 (expression -> expression EQUAL expression .) ]
+  ! MINUS           [ reduce using rule 4 (expression -> expression EQUAL expression .) ]
+  ! STAR            [ reduce using rule 4 (expression -> expression EQUAL expression .) ]
+  ! SLASH           [ reduce using rule 4 (expression -> expression EQUAL expression .) ]
+  ! LEFT_PAREN      [ shift and go to state 20 ]
+  ! LEFT_BRACKET    [ shift and go to state 21 ]
+
+
+state 27
+
+    (5) expression -> expression PLUS expression .
+    (4) expression -> expression . EQUAL expression
+    (5) expression -> expression . PLUS expression
+    (6) expression -> expression . MINUS expression
+    (7) expression -> expression . STAR expression
+    (8) expression -> expression . SLASH expression
+    (14) expression -> expression . LEFT_PAREN expression_list RIGHT_PAREN
+    (18) assignment_target -> expression . LEFT_BRACKET expression RIGHT_BRACKET
+
+    SEMICOLON       reduce using rule 5 (expression -> expression PLUS expression .)
+    EQUAL           reduce using rule 5 (expression -> expression PLUS expression .)
+    PLUS            reduce using rule 5 (expression -> expression PLUS expression .)
+    MINUS           reduce using rule 5 (expression -> expression PLUS expression .)
+    LEFT_PAREN      reduce using rule 5 (expression -> expression PLUS expression .)
+    LEFT_BRACKET    reduce using rule 5 (expression -> expression PLUS expression .)
+    RIGHT_PAREN     reduce using rule 5 (expression -> expression PLUS expression .)
+    COMMA           reduce using rule 5 (expression -> expression PLUS expression .)
+    RIGHT_BRACKET   reduce using rule 5 (expression -> expression PLUS expression .)
+    STAR            shift and go to state 18
+    SLASH           shift and go to state 19
+
+  ! STAR            [ reduce using rule 5 (expression -> expression PLUS expression .) ]
+  ! SLASH           [ reduce using rule 5 (expression -> expression PLUS expression .) ]
+  ! EQUAL           [ shift and go to state 15 ]
+  ! PLUS            [ shift and go to state 16 ]
+  ! MINUS           [ shift and go to state 17 ]
+  ! LEFT_PAREN      [ shift and go to state 20 ]
+  ! LEFT_BRACKET    [ shift and go to state 21 ]
+
+
+state 28
+
+    (6) expression -> expression MINUS expression .
+    (4) expression -> expression . EQUAL expression
+    (5) expression -> expression . PLUS expression
+    (6) expression -> expression . MINUS expression
+    (7) expression -> expression . STAR expression
+    (8) expression -> expression . SLASH expression
+    (14) expression -> expression . LEFT_PAREN expression_list RIGHT_PAREN
+    (18) assignment_target -> expression . LEFT_BRACKET expression RIGHT_BRACKET
+
+    SEMICOLON       reduce using rule 6 (expression -> expression MINUS expression .)
+    EQUAL           reduce using rule 6 (expression -> expression MINUS expression .)
+    PLUS            reduce using rule 6 (expression -> expression MINUS expression .)
+    MINUS           reduce using rule 6 (expression -> expression MINUS expression .)
+    LEFT_PAREN      reduce using rule 6 (expression -> expression MINUS expression .)
+    LEFT_BRACKET    reduce using rule 6 (expression -> expression MINUS expression .)
+    RIGHT_PAREN     reduce using rule 6 (expression -> expression MINUS expression .)
+    COMMA           reduce using rule 6 (expression -> expression MINUS expression .)
+    RIGHT_BRACKET   reduce using rule 6 (expression -> expression MINUS expression .)
+    STAR            shift and go to state 18
+    SLASH           shift and go to state 19
+
+  ! STAR            [ reduce using rule 6 (expression -> expression MINUS expression .) ]
+  ! SLASH           [ reduce using rule 6 (expression -> expression MINUS expression .) ]
+  ! EQUAL           [ shift and go to state 15 ]
+  ! PLUS            [ shift and go to state 16 ]
+  ! MINUS           [ shift and go to state 17 ]
+  ! LEFT_PAREN      [ shift and go to state 20 ]
+  ! LEFT_BRACKET    [ shift and go to state 21 ]
+
+
+state 29
+
+    (7) expression -> expression STAR expression .
+    (4) expression -> expression . EQUAL expression
+    (5) expression -> expression . PLUS expression
+    (6) expression -> expression . MINUS expression
+    (7) expression -> expression . STAR expression
+    (8) expression -> expression . SLASH expression
+    (14) expression -> expression . LEFT_PAREN expression_list RIGHT_PAREN
+    (18) assignment_target -> expression . LEFT_BRACKET expression RIGHT_BRACKET
+
+    SEMICOLON       reduce using rule 7 (expression -> expression STAR expression .)
+    EQUAL           reduce using rule 7 (expression -> expression STAR expression .)
+    PLUS            reduce using rule 7 (expression -> expression STAR expression .)
+    MINUS           reduce using rule 7 (expression -> expression STAR expression .)
+    STAR            reduce using rule 7 (expression -> expression STAR expression .)
+    SLASH           reduce using rule 7 (expression -> expression STAR expression .)
+    LEFT_PAREN      reduce using rule 7 (expression -> expression STAR expression .)
+    LEFT_BRACKET    reduce using rule 7 (expression -> expression STAR expression .)
+    RIGHT_PAREN     reduce using rule 7 (expression -> expression STAR expression .)
+    COMMA           reduce using rule 7 (expression -> expression STAR expression .)
+    RIGHT_BRACKET   reduce using rule 7 (expression -> expression STAR expression .)
+
+  ! EQUAL           [ shift and go to state 15 ]
+  ! PLUS            [ shift and go to state 16 ]
+  ! MINUS           [ shift and go to state 17 ]
+  ! STAR            [ shift and go to state 18 ]
+  ! SLASH           [ shift and go to state 19 ]
+  ! LEFT_PAREN      [ shift and go to state 20 ]
+  ! LEFT_BRACKET    [ shift and go to state 21 ]
+
+
+state 30
+
+    (8) expression -> expression SLASH expression .
+    (4) expression -> expression . EQUAL expression
+    (5) expression -> expression . PLUS expression
+    (6) expression -> expression . MINUS expression
+    (7) expression -> expression . STAR expression
+    (8) expression -> expression . SLASH expression
+    (14) expression -> expression . LEFT_PAREN expression_list RIGHT_PAREN
+    (18) assignment_target -> expression . LEFT_BRACKET expression RIGHT_BRACKET
+
+    SEMICOLON       reduce using rule 8 (expression -> expression SLASH expression .)
+    EQUAL           reduce using rule 8 (expression -> expression SLASH expression .)
+    PLUS            reduce using rule 8 (expression -> expression SLASH expression .)
+    MINUS           reduce using rule 8 (expression -> expression SLASH expression .)
+    STAR            reduce using rule 8 (expression -> expression SLASH expression .)
+    SLASH           reduce using rule 8 (expression -> expression SLASH expression .)
+    LEFT_PAREN      reduce using rule 8 (expression -> expression SLASH expression .)
+    LEFT_BRACKET    reduce using rule 8 (expression -> expression SLASH expression .)
+    RIGHT_PAREN     reduce using rule 8 (expression -> expression SLASH expression .)
+    COMMA           reduce using rule 8 (expression -> expression SLASH expression .)
+    RIGHT_BRACKET   reduce using rule 8 (expression -> expression SLASH expression .)
+
+  ! EQUAL           [ shift and go to state 15 ]
+  ! PLUS            [ shift and go to state 16 ]
+  ! MINUS           [ shift and go to state 17 ]
+  ! STAR            [ shift and go to state 18 ]
+  ! SLASH           [ shift and go to state 19 ]
+  ! LEFT_PAREN      [ shift and go to state 20 ]
+  ! LEFT_BRACKET    [ shift and go to state 21 ]
+
+
+state 31
+
+    (21) expression_list -> expression .
+    (22) expression_list -> expression . COMMA expression_list
+    (4) expression -> expression . EQUAL expression
+    (5) expression -> expression . PLUS expression
+    (6) expression -> expression . MINUS expression
+    (7) expression -> expression . STAR expression
+    (8) expression -> expression . SLASH expression
+    (14) expression -> expression . LEFT_PAREN expression_list RIGHT_PAREN
+    (18) assignment_target -> expression . LEFT_BRACKET expression RIGHT_BRACKET
+
+    RIGHT_PAREN     reduce using rule 21 (expression_list -> expression .)
+    COMMA           shift and go to state 36
+    EQUAL           shift and go to state 15
+    PLUS            shift and go to state 16
+    MINUS           shift and go to state 17
+    STAR            shift and go to state 18
+    SLASH           shift and go to state 19
+    LEFT_PAREN      shift and go to state 20
+    LEFT_BRACKET    shift and go to state 21
+
+
+state 32
+
+    (14) expression -> expression LEFT_PAREN expression_list . RIGHT_PAREN
+
+    RIGHT_PAREN     shift and go to state 37
+
+
+state 33
+
+    (20) expression_list -> empty .
+
+    RIGHT_PAREN     reduce using rule 20 (expression_list -> empty .)
+
+
+state 34
+
+    (18) assignment_target -> expression LEFT_BRACKET expression . RIGHT_BRACKET
+    (4) expression -> expression . EQUAL expression
+    (5) expression -> expression . PLUS expression
+    (6) expression -> expression . MINUS expression
+    (7) expression -> expression . STAR expression
+    (8) expression -> expression . SLASH expression
+    (14) expression -> expression . LEFT_PAREN expression_list RIGHT_PAREN
+    (18) assignment_target -> expression . LEFT_BRACKET expression RIGHT_BRACKET
+
+    RIGHT_BRACKET   shift and go to state 38
+    EQUAL           shift and go to state 15
+    PLUS            shift and go to state 16
+    MINUS           shift and go to state 17
+    STAR            shift and go to state 18
+    SLASH           shift and go to state 19
+    LEFT_PAREN      shift and go to state 20
+    LEFT_BRACKET    shift and go to state 21
+
+
+state 35
+
+    (9) expression -> LEFT_PAREN expression RIGHT_PAREN .
+
+    SEMICOLON       reduce using rule 9 (expression -> LEFT_PAREN expression RIGHT_PAREN .)
+    EQUAL           reduce using rule 9 (expression -> LEFT_PAREN expression RIGHT_PAREN .)
+    PLUS            reduce using rule 9 (expression -> LEFT_PAREN expression RIGHT_PAREN .)
+    MINUS           reduce using rule 9 (expression -> LEFT_PAREN expression RIGHT_PAREN .)
+    STAR            reduce using rule 9 (expression -> LEFT_PAREN expression RIGHT_PAREN .)
+    SLASH           reduce using rule 9 (expression -> LEFT_PAREN expression RIGHT_PAREN .)
+    LEFT_PAREN      reduce using rule 9 (expression -> LEFT_PAREN expression RIGHT_PAREN .)
+    LEFT_BRACKET    reduce using rule 9 (expression -> LEFT_PAREN expression RIGHT_PAREN .)
+    RIGHT_PAREN     reduce using rule 9 (expression -> LEFT_PAREN expression RIGHT_PAREN .)
+    COMMA           reduce using rule 9 (expression -> LEFT_PAREN expression RIGHT_PAREN .)
+    RIGHT_BRACKET   reduce using rule 9 (expression -> LEFT_PAREN expression RIGHT_PAREN .)
+
+
+state 36
+
+    (22) expression_list -> expression COMMA . expression_list
+    (20) expression_list -> . empty
+    (21) expression_list -> . expression
+    (22) expression_list -> . expression COMMA expression_list
+    (23) empty -> .
+    (4) expression -> . expression EQUAL expression
+    (5) expression -> . expression PLUS expression
+    (6) expression -> . expression MINUS expression
+    (7) expression -> . expression STAR expression
+    (8) expression -> . expression SLASH expression
+    (9) expression -> . LEFT_PAREN expression RIGHT_PAREN
+    (10) expression -> . MINUS expression
+    (11) expression -> . INTEGER
+    (12) expression -> . REAL
+    (13) expression -> . STRING
+    (14) expression -> . expression LEFT_PAREN expression_list RIGHT_PAREN
+    (15) expression -> . AMPERSAND expression
+    (16) expression -> . assignment_target
+    (17) assignment_target -> . IDENTIFIER
+    (18) assignment_target -> . expression LEFT_BRACKET expression RIGHT_BRACKET
+    (19) assignment_target -> . STAR expression
+
+    RIGHT_PAREN     reduce using rule 23 (empty -> .)
+    LEFT_PAREN      shift and go to state 6
+    MINUS           shift and go to state 4
+    INTEGER         shift and go to state 7
+    REAL            shift and go to state 8
+    STRING          shift and go to state 9
+    AMPERSAND       shift and go to state 10
+    IDENTIFIER      shift and go to state 12
+    STAR            shift and go to state 5
+
+    expression                     shift and go to state 31
+    expression_list                shift and go to state 39
+    empty                          shift and go to state 33
+    assignment_target              shift and go to state 11
+
+state 37
+
+    (14) expression -> expression LEFT_PAREN expression_list RIGHT_PAREN .
+
+    SEMICOLON       reduce using rule 14 (expression -> expression LEFT_PAREN expression_list RIGHT_PAREN .)
+    EQUAL           reduce using rule 14 (expression -> expression LEFT_PAREN expression_list RIGHT_PAREN .)
+    PLUS            reduce using rule 14 (expression -> expression LEFT_PAREN expression_list RIGHT_PAREN .)
+    MINUS           reduce using rule 14 (expression -> expression LEFT_PAREN expression_list RIGHT_PAREN .)
+    STAR            reduce using rule 14 (expression -> expression LEFT_PAREN expression_list RIGHT_PAREN .)
+    SLASH           reduce using rule 14 (expression -> expression LEFT_PAREN expression_list RIGHT_PAREN .)
+    LEFT_PAREN      reduce using rule 14 (expression -> expression LEFT_PAREN expression_list RIGHT_PAREN .)
+    LEFT_BRACKET    reduce using rule 14 (expression -> expression LEFT_PAREN expression_list RIGHT_PAREN .)
+    RIGHT_PAREN     reduce using rule 14 (expression -> expression LEFT_PAREN expression_list RIGHT_PAREN .)
+    COMMA           reduce using rule 14 (expression -> expression LEFT_PAREN expression_list RIGHT_PAREN .)
+    RIGHT_BRACKET   reduce using rule 14 (expression -> expression LEFT_PAREN expression_list RIGHT_PAREN .)
+
+
+state 38
+
+    (18) assignment_target -> expression LEFT_BRACKET expression RIGHT_BRACKET .
+
+    SEMICOLON       reduce using rule 18 (assignment_target -> expression LEFT_BRACKET expression RIGHT_BRACKET .)
+    EQUAL           reduce using rule 18 (assignment_target -> expression LEFT_BRACKET expression RIGHT_BRACKET .)
+    PLUS            reduce using rule 18 (assignment_target -> expression LEFT_BRACKET expression RIGHT_BRACKET .)
+    MINUS           reduce using rule 18 (assignment_target -> expression LEFT_BRACKET expression RIGHT_BRACKET .)
+    STAR            reduce using rule 18 (assignment_target -> expression LEFT_BRACKET expression RIGHT_BRACKET .)
+    SLASH           reduce using rule 18 (assignment_target -> expression LEFT_BRACKET expression RIGHT_BRACKET .)
+    LEFT_PAREN      reduce using rule 18 (assignment_target -> expression LEFT_BRACKET expression RIGHT_BRACKET .)
+    LEFT_BRACKET    reduce using rule 18 (assignment_target -> expression LEFT_BRACKET expression RIGHT_BRACKET .)
+    RIGHT_PAREN     reduce using rule 18 (assignment_target -> expression LEFT_BRACKET expression RIGHT_BRACKET .)
+    COMMA           reduce using rule 18 (assignment_target -> expression LEFT_BRACKET expression RIGHT_BRACKET .)
+    RIGHT_BRACKET   reduce using rule 18 (assignment_target -> expression LEFT_BRACKET expression RIGHT_BRACKET .)
+
+
+state 39
+
+    (22) expression_list -> expression COMMA expression_list .
+
+    RIGHT_PAREN     reduce using rule 22 (expression_list -> expression COMMA expression_list .)
+
