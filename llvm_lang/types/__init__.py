@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
+from collections import Counter
 from dataclass import dataclass
-from typing import ClassVar, Iterable, List, Optional, Tuple, Union
+from operator import itemgetter
+from typing import List, Optional, Tuple, Union
 
 
 class TypeError(Exception):
@@ -46,7 +48,8 @@ class FloatType(Type):
 
 @dataclass
 class BoolType(Type):
-    pass
+    def verify(self):
+        pass
 
 
 @dataclass
@@ -59,6 +62,17 @@ class SymbolType(Type):
     """
 
     repr: str
+
+    def verify(self):
+        if not self.repr:
+            raise TypeError("Symbols must not be empty strings")
+
+
+def verify_no_duplicate(elems, msg):
+    counted = Counter(elems)
+    most_common, times = counted.most_common(1)[0]
+    if times > 1:
+        raise TypeError(msg % most_common)
 
 
 @dataclass
@@ -83,10 +97,16 @@ class EnumType(Type):
     name: str
     variants: List[str]
 
+    def verify(self):
+        verify_no_duplicate(self.variants, "Duplicate enum variant %s")
+
 
 @dataclass
 class GenericType(Type):
     type_parameters: List[TypeVariable]
+
+    def verify(self):
+        verify_no_duplicate(self.type_parameters, "Duplicate type variable %s")
 
 
 @dataclass
@@ -123,6 +143,10 @@ class UnionType(GenericType):
     name: str
     variants: List[Tuple[str, Union["TupleType", "StructType"]]]
 
+    def verify(self):
+        super(UnionType, self).verify()
+        verify_no_duplicate(self.variants, "Duplicate union variant %s")
+
 
 @dataclass
 class StructType(GenericType):
@@ -149,6 +173,11 @@ class StructType(GenericType):
     name: str
     fields: List[Tuple[str, Type]]
 
+    def verify(self):
+        super(StructType, self).verify()
+        verify_no_duplicate(map(itemgetter(0), self.fields),
+                            "Duplicate field name %s")
+
 
 @dataclass
 class TupleType(Type):
@@ -162,6 +191,9 @@ class TupleType(Type):
     """
 
     elements: List[Type]
+
+    def verify(self):
+        pass
 
 
 @dataclass
@@ -180,6 +212,9 @@ class ArrayType(Type):
     length: int
     element_type: Type
 
+    def verify(self):
+        pass
+
 
 @dataclass
 class SliceType(Type):
@@ -191,6 +226,9 @@ class SliceType(Type):
     """
 
     element_type: Type
+
+    def verify(self):
+        pass
 
 
 @dataclass
@@ -208,6 +246,11 @@ class FunctionType(GenericType):
     name: Optional[str]
     return_type: Optional[Type]  # `void` if None
     parameters: List[Tuple[str, Type]]
+
+    def verify(self):
+        super(FunctionType, self).verify()
+        verify_no_duplicate(map(itemgetter(0), self.parameters),
+                            "Duplicate parameter name %s")
 
 
 # stretch goal: INTERFACE
