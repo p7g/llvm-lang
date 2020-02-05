@@ -15,6 +15,8 @@ ipython==7.11.1
 jedi==0.16.0
 llvmlite==0.31.0
 mccabe==0.6.1             # via pylama
+mypy-extensions==0.4.3    # via mypy
+mypy==0.761
 parso==0.6.0              # via jedi
 pathspec==0.7.0           # via black
 pexpect==4.8.0            # via ipython
@@ -32,7 +34,8 @@ six==1.14.0               # via traitlets
 snowballstemmer==2.0.0    # via pydocstyle
 toml==0.10.0              # via black
 traitlets==4.3.3          # via ipython
-typed-ast==1.4.1          # via black
+typed-ast==1.4.1          # via black, mypy
+typing-extensions==3.7.4.1  # via mypy
 wcwidth==0.1.8            # via prompt-toolkit
 
 # The following packages are considered to be unsafe in a requirements file:
