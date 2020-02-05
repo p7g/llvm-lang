@@ -1,28 +1,33 @@
+import attr
+
 from abc import ABC, abstractmethod
 from collections import Counter
-from dataclass import dataclass
 from operator import itemgetter
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Tuple, Union
+
+
+def type_(cls):
+    return attr.s(auto_attribs=True, frozen=True)(cls)
 
 
 class TypeError(Exception):
     pass
 
 
-@dataclass
+@type_
 class TypeVariable:
     name: str
     # TODO: constraints?
 
 
-@dataclass
+@type_
 class Type(ABC):
     @abstractmethod
     def verify(self):
         pass
 
 
-@dataclass
+@type_
 class IntType(Type):
     VALID_SIZES = (8, 16, 32, 64, 128)
 
@@ -31,10 +36,10 @@ class IntType(Type):
     def verify(self):
         if self.size not in self.VALID_SIZES:
             raise TypeError("Integer size must be one of: " +
-                            ", ".join(self.VALID_SIZES))
+                            ", ".join(map(str, self.VALID_SIZES)))
 
 
-@dataclass
+@type_
 class FloatType(Type):
     VALID_SIZES = (32, 64)
 
@@ -43,16 +48,16 @@ class FloatType(Type):
     def verify(self):
         if self.size not in self.VALID_SIZES:
             raise TypeError("Float size must be one of: " +
-                            ", ".join(self.VALID_SIZES))
+                            ", ".join(map(str, self.VALID_SIZES)))
 
 
-@dataclass
+@type_
 class BoolType(Type):
     def verify(self):
         pass
 
 
-@dataclass
+@type_
 class SymbolType(Type):
     """
     :something
@@ -75,7 +80,7 @@ def verify_no_duplicate(elems, msg):
         raise TypeError(msg % most_common)
 
 
-@dataclass
+@type_
 class EnumType(Type):
     """
     enum TokenType {
@@ -95,21 +100,24 @@ class EnumType(Type):
     """
 
     name: str
-    variants: List[str]
+    variants: Tuple[str, ...]
 
     def verify(self):
         verify_no_duplicate(self.variants, "Duplicate enum variant %s")
 
 
-@dataclass
+@type_
 class GenericType(Type):
-    type_parameters: List[TypeVariable]
+    type_parameters: Tuple[TypeVariable, ...] = attr.ib(factory=tuple,
+                                                        kw_only=True)
 
     def verify(self):
-        verify_no_duplicate(self.type_parameters, "Duplicate type variable %s")
+        if self.type_parameters:
+            verify_no_duplicate(self.type_parameters,
+                                "Duplicate type variable %s")
 
 
-@dataclass
+@type_
 class UnionType(GenericType):
     """
     union Token {
@@ -141,14 +149,15 @@ class UnionType(GenericType):
     """
 
     name: str
-    variants: List[Tuple[str, Union["TupleType", "StructType"]]]
+    variants: Tuple[Tuple[str, Union["TupleType", "StructType"]], ...]
 
     def verify(self):
         super(UnionType, self).verify()
-        verify_no_duplicate(self.variants, "Duplicate union variant %s")
+        verify_no_duplicate(map(itemgetter(0), self.variants),
+                            "Duplicate union variant %s")
 
 
-@dataclass
+@type_
 class StructType(GenericType):
     """
     struct Token {
@@ -171,7 +180,7 @@ class StructType(GenericType):
     """
 
     name: str
-    fields: List[Tuple[str, Type]]
+    fields: Tuple[Tuple[str, Type], ...]
 
     def verify(self):
         super(StructType, self).verify()
@@ -179,7 +188,7 @@ class StructType(GenericType):
                             "Duplicate field name %s")
 
 
-@dataclass
+@type_
 class TupleType(Type):
     """
     (123, "abc", 3.2)
@@ -190,13 +199,13 @@ class TupleType(Type):
     %0 = alloca { i32, %struct.string, double }
     """
 
-    elements: List[Type]
+    elements: Tuple[Type, ...] = ()
 
     def verify(self):
         pass
 
 
-@dataclass
+@type_
 class ArrayType(Type):
     """
     string[2] strings = ["abc", "123"];
@@ -216,7 +225,7 @@ class ArrayType(Type):
         pass
 
 
-@dataclass
+@type_
 class SliceType(Type):
     """
     // is basically length + pointer to elems: type { i32 len, T* elems }
@@ -231,7 +240,7 @@ class SliceType(Type):
         pass
 
 
-@dataclass
+@type_
 class FunctionType(GenericType):
     """
     pub int main(string[] argv) {
@@ -245,7 +254,7 @@ class FunctionType(GenericType):
 
     name: Optional[str]
     return_type: Optional[Type]  # `void` if None
-    parameters: List[Tuple[str, Type]]
+    parameters: Tuple[Tuple[str, Type], ...]
 
     def verify(self):
         super(FunctionType, self).verify()

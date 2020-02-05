@@ -1,5 +1,8 @@
+attrs==19.3.0
 llvmlite==0.31.0
 ply==3.11
+
+pytest
 
 yapf
 pylama
