@@ -62,10 +62,16 @@ def test_template_verify():
 
     assert verify(typ) is None, "Template with unique parameters is ok"
 
-    typ = types.StructTemplate(name="test_struct",
+    typ = types.StructTemplate(name="duplicate_type_variable",
                                type_parameters=(types.TypeVariable("T"),
                                                 types.TypeVariable("T")),
                                fields=(("a", types.IntType(32)), ))
+
+    with pytest.raises(types.TypeError):
+        verify(typ)
+
+    typ = types.StructTemplate(name="unbound_type_variable",
+                               fields=(("a", types.TypeVariable("T")), ))
 
     with pytest.raises(types.TypeError):
         verify(typ)
