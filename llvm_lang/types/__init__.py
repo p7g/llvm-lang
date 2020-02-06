@@ -1,9 +1,8 @@
 import attr
+import itertools
 
 from abc import ABC, abstractmethod
-from collections import Counter
-from operator import itemgetter
-from typing import Optional, Tuple, Union
+from typing import Iterable, Optional, Tuple, Union
 
 
 def type_(cls):
@@ -15,16 +14,16 @@ class TypeError(Exception):
 
 
 @type_
-class TypeVariable:
-    name: str
-    # TODO: constraints?
+class Type:
+    pass
 
 
 @type_
-class Type(ABC):
-    @abstractmethod
-    def verify(self):
-        pass
+class TypeVariable(Type):
+    name: str
+    value: Optional[Type] = None
+
+    # TODO: constraints?
 
 
 @type_
@@ -33,11 +32,6 @@ class IntType(Type):
 
     size: int
 
-    def verify(self):
-        if self.size not in self.VALID_SIZES:
-            raise TypeError("Integer size must be one of: " +
-                            ", ".join(map(str, self.VALID_SIZES)))
-
 
 @type_
 class FloatType(Type):
@@ -45,16 +39,10 @@ class FloatType(Type):
 
     size: int  # should only be 32 or 64
 
-    def verify(self):
-        if self.size not in self.VALID_SIZES:
-            raise TypeError("Float size must be one of: " +
-                            ", ".join(map(str, self.VALID_SIZES)))
-
 
 @type_
 class BoolType(Type):
-    def verify(self):
-        pass
+    pass
 
 
 @type_
@@ -65,19 +53,7 @@ class SymbolType(Type):
     type checking at compile time, at runtime usize with symbol_to_string
     function
     """
-
-    repr: str
-
-    def verify(self):
-        if not self.repr:
-            raise TypeError("Symbols must not be empty strings")
-
-
-def verify_no_duplicate(elems, msg):
-    counted = Counter(elems)
-    most_common, times = counted.most_common(1)[0]
-    if times > 1:
-        raise TypeError(msg % most_common)
+    pass
 
 
 @type_
@@ -102,23 +78,52 @@ class EnumType(Type):
     name: str
     variants: Tuple[str, ...]
 
-    def verify(self):
-        verify_no_duplicate(self.variants, "Duplicate enum variant %s")
+
+@type_
+class AggregateType(Type, ABC):
+    @abstractmethod
+    def free_type_variables(self):
+        ...
 
 
 @type_
-class GenericType(Type):
+class Template(AggregateType, ABC):
     type_parameters: Tuple[TypeVariable, ...] = attr.ib(factory=tuple,
                                                         kw_only=True)
 
-    def verify(self):
-        if self.type_parameters:
-            verify_no_duplicate(self.type_parameters,
-                                "Duplicate type variable %s")
+    def free_type_variables(self):
+        child_type_vars = {
+            t
+            for t in self.child_types() if isinstance(t, TypeVariable)
+        }
+        return child_type_vars - set(self.type_parameters)
+
+    @abstractmethod
+    def child_types(self):
+        # types used locally + free type variables of generics
+        ...
+
+    def instantiate(self, type_arguments: Iterable[Type]):
+        for var, arg in itertools.zip_longest(self.type_parameters,
+                                              type_arguments):
+            if var is None:
+                raise TypeError("Too many type arguments")
+            if arg is None:
+                raise TypeError(f"Missing type argument {var.name}")
+            var.value = arg
 
 
 @type_
-class UnionType(GenericType):
+class NewType(Template):
+    name: str
+    inner_type: Type
+
+    def child_types(self):
+        return self.inner_type.free_type_variables()
+
+
+@type_
+class UnionTemplate(Template):
     """
     union Token {
         EOF
@@ -151,14 +156,13 @@ class UnionType(GenericType):
     name: str
     variants: Tuple[Tuple[str, Union["TupleType", "StructType"]], ...]
 
-    def verify(self):
-        super(UnionType, self).verify()
-        verify_no_duplicate(map(itemgetter(0), self.variants),
-                            "Duplicate union variant %s")
+    def child_types(self):
+        for _name, typ in self.variants:
+            yield from typ.free_type_variables()
 
 
 @type_
-class StructType(GenericType):
+class StructTemplate(Template):
     """
     struct Token {
         TokenType type,
@@ -182,14 +186,16 @@ class StructType(GenericType):
     name: str
     fields: Tuple[Tuple[str, Type], ...]
 
-    def verify(self):
-        super(StructType, self).verify()
-        verify_no_duplicate(map(itemgetter(0), self.fields),
-                            "Duplicate field name %s")
+    def child_types(self):
+        for _name, typ in self.fields:
+            if isinstance(typ, Template):
+                yield from typ.free_type_variables()
+            else:
+                yield typ
 
 
 @type_
-class TupleType(Type):
+class TupleType(AggregateType):
     """
     (123, "abc", 3.2)
 
@@ -201,12 +207,16 @@ class TupleType(Type):
 
     elements: Tuple[Type, ...] = ()
 
-    def verify(self):
-        pass
+    def free_type_variables(self):
+        for ty in self.elements:
+            if isinstance(ty, TypeVariable):
+                yield ty
+            elif isinstance(ty, AggregateType):
+                yield from ty.free_type_variables()
 
 
 @type_
-class ArrayType(Type):
+class ArrayType(AggregateType):
     """
     string[2] strings = ["abc", "123"];
 
@@ -221,8 +231,11 @@ class ArrayType(Type):
     length: int
     element_type: Type
 
-    def verify(self):
-        pass
+    def free_type_variables(self):
+        if isinstance(self.element_type, TypeVariable):
+            yield self.element_type
+        elif isinstance(self.element_type, AggregateType):
+            yield from self.element_type.free_type_variables()
 
 
 @type_
@@ -236,12 +249,15 @@ class SliceType(Type):
 
     element_type: Type
 
-    def verify(self):
-        pass
+    def free_type_variables(self):
+        if isinstance(self.element_type, TypeVariable):
+            yield self.element_type
+        elif isinstance(self.element_type, AggregateType):
+            yield from self.element_type.free_type_variables()
 
 
 @type_
-class FunctionType(GenericType):
+class FunctionTemplate(Template):
     """
     pub int main(string[] argv) {
         return 0;
@@ -257,9 +273,16 @@ class FunctionType(GenericType):
     parameters: Tuple[Tuple[str, Type], ...]
 
     def verify(self):
-        super(FunctionType, self).verify()
-        verify_no_duplicate(map(itemgetter(0), self.parameters),
-                            "Duplicate parameter name %s")
+        super(FunctionTemplate, self).verify()
+
+    def child_types(self):
+        if self.return_type is not None:
+            yield self.return_type
+        for _name, typ in self.parameters:
+            if isinstance(typ, Template):
+                yield from typ.free_type_variables()
+            else:
+                yield typ
 
 
 # stretch goal: INTERFACE
