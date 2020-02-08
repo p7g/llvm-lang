@@ -25,6 +25,9 @@ class TypeVariable(Type):
 
     # TODO: constraints?
 
+    def __str__(self):
+        return self.name
+
 
 @type_
 class IntType(Type):
@@ -32,17 +35,24 @@ class IntType(Type):
 
     size: int
 
+    def __str__(self):
+        return f"int{self.size}"
+
 
 @type_
 class FloatType(Type):
     VALID_SIZES = (32, 64)
 
-    size: int  # should only be 32 or 64
+    size: int
+
+    def __str__(self):
+        return f"float{self.size}"
 
 
 @type_
 class BoolType(Type):
-    pass
+    def __str__(self):
+        return "bool"
 
 
 @type_
@@ -53,7 +63,9 @@ class SymbolType(Type):
     type checking at compile time, at runtime usize with symbol_to_string
     function
     """
-    pass
+
+    def __str__(self):
+        return "symbol"
 
 
 @type_
@@ -78,6 +90,9 @@ class EnumType(Type):
     name: str
     variants: Tuple[str, ...]
 
+    def __str__(self):
+        return self.name
+
 
 @type_
 class AggregateType(Type, ABC):
@@ -90,6 +105,11 @@ class AggregateType(Type, ABC):
 class Template(AggregateType, ABC):
     type_parameters: Tuple[TypeVariable, ...] = attr.ib(factory=tuple,
                                                         kw_only=True)
+
+    def __str__(self):
+        if self.type_parameters:
+            return "<" + ", ".join(map(str, self.type_parameters)) + ">"
+        return ""
 
     def free_type_variables(self):
         child_type_vars = {
@@ -120,6 +140,9 @@ class NewType(Template):
 
     def child_types(self):
         return self.inner_type.free_type_variables()
+
+    def __str__(self):
+        return f"{self.name}{super().__str__()}"
 
 
 @type_
@@ -160,6 +183,9 @@ class UnionTemplate(Template):
         for _name, typ in self.variants:
             yield from typ.free_type_variables()
 
+    def __str__(self):
+        return f"{self.name}{super().__str__()}"
+
 
 @type_
 class StructTemplate(Template):
@@ -193,6 +219,9 @@ class StructTemplate(Template):
             else:
                 yield typ
 
+    def __str__(self):
+        return f"{self.name}{super().__str__()}"
+
 
 @type_
 class TupleType(AggregateType):
@@ -213,6 +242,9 @@ class TupleType(AggregateType):
                 yield ty
             elif isinstance(ty, AggregateType):
                 yield from ty.free_type_variables()
+
+    def __str__(self):
+        return "(" + ", ".join(map(str, self.elements)) + ")"
 
 
 @type_
@@ -237,6 +269,9 @@ class ArrayType(AggregateType):
         elif isinstance(self.element_type, AggregateType):
             yield from self.element_type.free_type_variables()
 
+    def __str__(self):
+        return f"{self.element_type}[{self.length}]"
+
 
 @type_
 class SliceType(Type):
@@ -254,6 +289,9 @@ class SliceType(Type):
             yield self.element_type
         elif isinstance(self.element_type, AggregateType):
             yield from self.element_type.free_type_variables()
+
+    def __str__(self):
+        return f"{self.element_type}[]"
 
 
 @type_
@@ -283,6 +321,12 @@ class FunctionTemplate(Template):
                 yield from typ.free_type_variables()
             else:
                 yield typ
+
+    def __str__(self):
+        name = "<anon>" if self.name is None else self.name
+        params = ", ".join(map(str, self.parameters))
+
+        return f"{self.return_type} {name}{super().__str__()}({params})"
 
 
 # stretch goal: INTERFACE
