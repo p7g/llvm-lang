@@ -1,6 +1,6 @@
 from collections import Counter
 from functools import singledispatch
-from operator import attrgetter, itemgetter
+from operator import itemgetter
 
 from .. import types
 from . import TypeError
@@ -49,34 +49,33 @@ def verify_enum_type(self: types.EnumType):
     verify_no_duplicate(self.variants, "Duplicate enum variant %s")
 
 
-@verify.register
-def verify_template(self: types.Template):
+def verify_scopedtype(self: types.ScopedType):
     if self.type_parameters:
         verify_no_duplicate(self.type_parameters, "Duplicate type variable %s")
-    unbound = self.free_type_variables()
-    if unbound:
-        raise TypeError("Unbound type variables: " +
-                        ", ".join(map(attrgetter("name"), unbound)))
 
 
 @verify.register
 def verify_newtype(self: types.NewType):
-    verify_template(self)
+    verify_scopedtype(self)
     verify(self.inner_type)
 
 
 @verify.register
-def verify_union_type(self: types.UnionTemplate):
-    verify_template(self)
+def verify_union_type(self: types.UnionType):
+    verify_scopedtype(self)
     verify_no_duplicate(map(itemgetter(0), self.variants),
                         "Duplicate union variant %s")
+    for _name, variant in self.variants:
+        verify(variant)
 
 
 @verify.register
-def verify_struct_type(self: types.StructTemplate):
-    verify_template(self)
+def verify_struct_type(self: types.StructType):
+    verify_scopedtype(self)
     verify_no_duplicate(map(itemgetter(0), self.fields),
                         "Duplicate field name %s")
+    for _name, field in self.fields:
+        verify(field)
 
 
 @verify.register
@@ -98,7 +97,11 @@ def verify_slice_type(self: types.SliceType):
 
 
 @verify.register
-def verify_function_type(self: types.FunctionTemplate):
-    verify_template(self)
+def verify_function_type(self: types.FunctionType):
+    verify_scopedtype(self)
     verify_no_duplicate(map(itemgetter(0), self.parameters),
                         "Duplicate parameter name %s")
+    if self.return_type:
+        verify(self.return_type)
+    for _name, ty in self.parameters:
+        verify(ty)

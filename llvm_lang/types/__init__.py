@@ -1,12 +1,9 @@
 import attr
 import itertools
 
-from abc import ABC, abstractmethod
-from typing import Iterable, Optional, Tuple, Union
+from typing import Optional, Tuple, Union
 
-
-def type_(cls):
-    return attr.s(auto_attribs=True, frozen=True)(cls)
+type_ = attr.s(auto_attribs=True, frozen=True)
 
 
 class TypeError(Exception):
@@ -18,19 +15,12 @@ class Type:
     pass
 
 
-@type_
-class TypeVariable(Type):
-    name: str
-    value: Optional[Type] = None
-
-    # TODO: constraints?
-
-    def __str__(self):
-        return self.name
+class PrimitiveType:
+    pass
 
 
 @type_
-class IntType(Type):
+class IntType(PrimitiveType):
     VALID_SIZES = (8, 16, 32, 64, 128)
 
     size: int
@@ -40,7 +30,7 @@ class IntType(Type):
 
 
 @type_
-class FloatType(Type):
+class FloatType(PrimitiveType):
     VALID_SIZES = (32, 64)
 
     size: int
@@ -50,20 +40,19 @@ class FloatType(Type):
 
 
 @type_
-class BoolType(Type):
+class BoolType(PrimitiveType):
     def __str__(self):
         return "bool"
 
 
 @type_
-class SymbolType(Type):
+class SymbolType(PrimitiveType):
     """
     :something
 
     type checking at compile time, at runtime usize with symbol_to_string
     function
     """
-
     def __str__(self):
         return "symbol"
 
@@ -95,58 +84,48 @@ class EnumType(Type):
 
 
 @type_
-class AggregateType(Type, ABC):
-    @abstractmethod
-    def free_type_variables(self):
-        ...
+class TypeVariable(Type):
+    name: str
+    value: Optional[Type] = None
 
-
-@type_
-class Template(AggregateType, ABC):
-    type_parameters: Tuple[TypeVariable, ...] = attr.ib(factory=tuple,
-                                                        kw_only=True)
+    # TODO: constraints?
 
     def __str__(self):
-        if self.type_parameters:
-            return "<" + ", ".join(map(str, self.type_parameters)) + ">"
-        return ""
-
-    def free_type_variables(self):
-        child_type_vars = {
-            t
-            for t in self.child_types() if isinstance(t, TypeVariable)
-        }
-        return child_type_vars - set(self.type_parameters)
-
-    @abstractmethod
-    def child_types(self):
-        # types used locally + free type variables of generics
-        ...
-
-    def instantiate(self, type_arguments: Iterable[Type]):
-        for var, arg in itertools.zip_longest(self.type_parameters,
-                                              type_arguments):
-            if var is None:
-                raise TypeError("Too many type arguments")
-            if arg is None:
-                raise TypeError(f"Missing type argument {var.name}")
-            var.value = arg
+        return self.name
 
 
 @type_
-class NewType(Template):
+class ScopedType(Type):
+    """A scoped type declares type variables that must be provided during
+    instantiation"""
+
+    type_parameters: Tuple[TypeVariable, ...] = attr.ib(factory=tuple,
+                                                        kw_only=True)
+    type_arguments: Tuple[Optional[TypeVariable], ...] = attr.ib(factory=tuple,
+                                                                 kw_only=True)
+
+    def __str__(self):
+        types = []
+        for param, arg in itertools.zip_longest(self.type_parameters,
+                                                self.type_arguments):
+            types.append(arg if arg is not None else param)
+
+        if types:
+            return "<" + ", ".join(map(str, types)) + ">"
+        return ""
+
+
+@type_
+class NewType(ScopedType):
     name: str
     inner_type: Type
-
-    def child_types(self):
-        return self.inner_type.free_type_variables()
 
     def __str__(self):
         return f"{self.name}{super().__str__()}"
 
 
 @type_
-class UnionTemplate(Template):
+class UnionType(ScopedType):
     """
     union Token {
         EOF
@@ -179,16 +158,12 @@ class UnionTemplate(Template):
     name: str
     variants: Tuple[Tuple[str, Union["TupleType", "StructType"]], ...]
 
-    def child_types(self):
-        for _name, typ in self.variants:
-            yield from typ.free_type_variables()
-
     def __str__(self):
         return f"{self.name}{super().__str__()}"
 
 
 @type_
-class StructTemplate(Template):
+class StructType(ScopedType):
     """
     struct Token {
         TokenType type,
@@ -212,19 +187,12 @@ class StructTemplate(Template):
     name: str
     fields: Tuple[Tuple[str, Type], ...]
 
-    def child_types(self):
-        for _name, typ in self.fields:
-            if isinstance(typ, Template):
-                yield from typ.free_type_variables()
-            else:
-                yield typ
-
     def __str__(self):
         return f"{self.name}{super().__str__()}"
 
 
 @type_
-class TupleType(AggregateType):
+class TupleType(Type):
     """
     (123, "abc", 3.2)
 
@@ -236,19 +204,12 @@ class TupleType(AggregateType):
 
     elements: Tuple[Type, ...] = ()
 
-    def free_type_variables(self):
-        for ty in self.elements:
-            if isinstance(ty, TypeVariable):
-                yield ty
-            elif isinstance(ty, AggregateType):
-                yield from ty.free_type_variables()
-
     def __str__(self):
         return "(" + ", ".join(map(str, self.elements)) + ")"
 
 
 @type_
-class ArrayType(AggregateType):
+class ArrayType(Type):
     """
     string[2] strings = ["abc", "123"];
 
@@ -262,12 +223,6 @@ class ArrayType(AggregateType):
 
     length: int
     element_type: Type
-
-    def free_type_variables(self):
-        if isinstance(self.element_type, TypeVariable):
-            yield self.element_type
-        elif isinstance(self.element_type, AggregateType):
-            yield from self.element_type.free_type_variables()
 
     def __str__(self):
         return f"{self.element_type}[{self.length}]"
@@ -284,18 +239,12 @@ class SliceType(Type):
 
     element_type: Type
 
-    def free_type_variables(self):
-        if isinstance(self.element_type, TypeVariable):
-            yield self.element_type
-        elif isinstance(self.element_type, AggregateType):
-            yield from self.element_type.free_type_variables()
-
     def __str__(self):
         return f"{self.element_type}[]"
 
 
 @type_
-class FunctionTemplate(Template):
+class FunctionType(ScopedType):
     """
     pub int main(string[] argv) {
         return 0;
@@ -309,18 +258,6 @@ class FunctionTemplate(Template):
     name: Optional[str]
     return_type: Optional[Type]  # `void` if None
     parameters: Tuple[Tuple[str, Type], ...]
-
-    def verify(self):
-        super(FunctionTemplate, self).verify()
-
-    def child_types(self):
-        if self.return_type is not None:
-            yield self.return_type
-        for _name, typ in self.parameters:
-            if isinstance(typ, Template):
-                yield from typ.free_type_variables()
-            else:
-                yield typ
 
     def __str__(self):
         name = "<anon>" if self.name is None else self.name

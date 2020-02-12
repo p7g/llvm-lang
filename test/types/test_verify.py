@@ -36,10 +36,8 @@ def test_verify_no_duplicate():
 
     with pytest.raises(types.TypeError):
         verify_no_duplicate([
-            types.StructTemplate(name="test",
-                                 fields=(("a", types.BoolType()), )),
-            types.StructTemplate(name="test",
-                                 fields=(("a", types.BoolType()), )),
+            types.StructType(name="test", fields=(("a", types.BoolType()), )),
+            types.StructType(name="test", fields=(("a", types.BoolType()), )),
         ], "%s")
 
     assert verify_no_duplicate([1, 2, 3], "%s") is None
@@ -54,66 +52,62 @@ def test_enumtype_verify():
         verify(typ2)
 
 
-def test_template_verify():
-    typ = types.StructTemplate(name="test_struct",
-                               type_parameters=(types.TypeVariable("T"),
-                                                types.TypeVariable("U")),
-                               fields=(("a", types.IntType(32)), ))
+def test_scopedtype_verify():
+    typ = types.StructType(name="test_struct",
+                           type_parameters=(types.TypeVariable("T"),
+                                            types.TypeVariable("U")),
+                           fields=(("a", types.IntType(32)), ))
 
-    assert verify(typ) is None, "Template with unique parameters is ok"
+    assert verify(typ) is None, "ScopedType with unique parameters is ok"
 
-    typ = types.StructTemplate(name="duplicate_type_variable",
-                               type_parameters=(types.TypeVariable("T"),
-                                                types.TypeVariable("T")),
-                               fields=(("a", types.IntType(32)), ))
+    typ = types.StructType(name="duplicate_type_variable",
+                           type_parameters=(types.TypeVariable("T"),
+                                            types.TypeVariable("T")),
+                           fields=(("a", types.IntType(32)), ))
 
     with pytest.raises(types.TypeError):
         verify(typ)
 
-    typ = types.StructTemplate(name="unbound_type_variable",
-                               fields=(("a", types.TypeVariable("T")), ))
+    typ = types.StructType(name="unbound_type_variable",
+                           fields=(("a", types.TypeVariable("T")), ))
 
     with pytest.raises(types.TypeError):
         verify(typ)
 
 
 def test_uniontype_verify():
-    typ = types.UnionTemplate("test_union",
-                              variants=(
-                                  ("A", types.TupleType(
-                                      (types.IntType(32), ))),
-                                  ("B", types.TupleType(
-                                      (types.IntType(16), ))),
-                              ))
+    typ = types.UnionType("test_union",
+                          variants=(
+                              ("A", types.TupleType((types.IntType(32), ))),
+                              ("B", types.TupleType((types.IntType(16), ))),
+                          ))
 
     assert verify(typ) is None, "Union with unique variant names is ok"
 
-    typ = types.UnionTemplate("test_union",
-                              variants=(
-                                  ("A", types.TupleType(
-                                      (types.IntType(32), ))),
-                                  ("A", types.TupleType(
-                                      (types.IntType(16), ))),
-                              ))
+    typ = types.UnionType("test_union",
+                          variants=(
+                              ("A", types.TupleType((types.IntType(32), ))),
+                              ("A", types.TupleType((types.IntType(16), ))),
+                          ))
 
     with pytest.raises(types.TypeError):
         verify(typ)
 
 
 def test_structtype_verify():
-    typ = types.StructTemplate("test_struct",
-                               fields=(
-                                   ("a", types.IntType(8)),
-                                   ("b", types.IntType(16)),
-                               ))
+    typ = types.StructType("test_struct",
+                           fields=(
+                               ("a", types.IntType(8)),
+                               ("b", types.IntType(16)),
+                           ))
 
     assert verify(typ) is None, "Struct with unique field names is ok"
 
-    typ = types.StructTemplate("test_struct",
-                               fields=(
-                                   ("a", types.IntType(8)),
-                                   ("a", types.IntType(16)),
-                               ))
+    typ = types.StructType("test_struct",
+                           fields=(
+                               ("a", types.IntType(8)),
+                               ("a", types.IntType(16)),
+                           ))
 
     with pytest.raises(types.TypeError):
         verify(typ)
@@ -136,15 +130,15 @@ def test_slicetype_verify():
 
 
 def test_functiontemplate_verify():
-    typ = types.FunctionTemplate(
+    typ = types.FunctionType(
         name="test_func",
         return_type=None,
         parameters=(("a", types.IntType(8)), ("b", types.IntType(8))),
     )
 
-    assert verify(typ) is None, "FunctionTemplate with unique params is ok"
+    assert verify(typ) is None, "FunctionType with unique params is ok"
 
-    typ = types.FunctionTemplate(
+    typ = types.FunctionType(
         name="test_func",
         return_type=None,
         parameters=(("a", types.IntType(8)), ("a", types.IntType(8))),
