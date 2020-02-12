@@ -204,7 +204,8 @@ class TupleType(Type):
     elements: Tuple[Type, ...] = ()
 
     def __str__(self):
-        return "(" + ", ".join(map(str, self.elements)) + ")"
+        trailing_comma = "," if len(self.elements) == 1 else ""
+        return "(" + ", ".join(map(str, self.elements)) + trailing_comma + ")"
 
 
 @type_
