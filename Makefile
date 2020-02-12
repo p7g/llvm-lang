@@ -1,5 +1,5 @@
-format: **/*.py
-	yapf -ir $?
+format:
+	yapf -ir .
 
 
 .PHONY: format

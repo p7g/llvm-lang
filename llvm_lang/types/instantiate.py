@@ -12,7 +12,7 @@ def instantiate(ty: types.Type, arguments: TypeMap) -> types.Type:
         if ty.type_arguments:
             type_arguments = (arguments.get(t, t) if isinstance(
                 t, types.TypeVariable) else instantiate(t, arguments)
-                            for t in ty.type_arguments)
+                              for t in ty.type_arguments)
         else:
             type_arguments = arguments.values()
         return instantiate_scoped(ty, type_arguments)
