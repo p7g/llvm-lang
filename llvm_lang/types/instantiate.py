@@ -43,16 +43,8 @@ def instantiate_unscoped_typevariable(self: types.TypeVariable,
 @instantiate_unscoped.register
 def instantiate_unscoped_tupletype(self: types.TupleType,
                                    arguments: TypeMap) -> types.Type:
-    new_elements = []
-    for elem in self.elements:
-        if isinstance(elem, types.TypeVariable):
-            new_elem = arguments.get(elem, elem)
-        else:
-            new_elem = instantiate(elem, arguments)
-
-        new_elements.append(new_elem)
-
-    return types.TupleType(elements=tuple(new_elements))
+    return types.TupleType(elements=tuple(
+        instantiate(elem, arguments) for elem in self.elements))
 
 
 @instantiate_unscoped.register
@@ -89,12 +81,7 @@ def instantiate_scoped_uniontype(
 
     new_variants = []
     for name, variant_type in self.variants:
-        if isinstance(variant_type, types.TypeVariable):
-            ty = zipped.get(variant_type, variant_type)
-        else:
-            ty = variant_type
-
-        new_variants.append((name, instantiate(ty, zipped)))
+        new_variants.append((name, instantiate(variant_type, zipped)))
 
     return types.UnionType(name=self.name,
                            variants=tuple(new_variants),
@@ -122,12 +109,7 @@ def instantiate_structtype(self: types.StructType,
 
     new_fields = []
     for name, field_type in self.fields:
-        if isinstance(field_type, types.TypeVariable):
-            ty = zipped.get(field_type, field_type)
-        else:
-            ty = field_type
-
-        new_fields.append((name, instantiate(ty, zipped)))
+        new_fields.append((name, instantiate(field_type, zipped)))
 
     return types.StructType(name=self.name,
                             fields=tuple(new_fields),
