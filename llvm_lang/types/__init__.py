@@ -86,7 +86,6 @@ class EnumType(Type):
 @type_
 class TypeVariable(Type):
     name: str
-    value: Optional[Type] = None
 
     # TODO: constraints?
 
