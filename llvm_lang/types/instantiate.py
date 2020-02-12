@@ -7,33 +7,46 @@ from .. import types
 TypeMap = Dict[types.TypeVariable, types.Type]
 
 
-@singledispatch
 def instantiate(ty: types.Type, arguments: TypeMap) -> types.Type:
+    if isinstance(ty, types.ScopedType):
+        if ty.type_arguments:
+            type_arguments = (arguments.get(t, t) if isinstance(
+                t, types.TypeVariable) else instantiate(t, arguments)
+                            for t in ty.type_arguments)
+        else:
+            type_arguments = arguments.values()
+        return instantiate_scoped(ty, type_arguments)
+
+    return instantiate_unscoped(ty, arguments)
+
+
+@singledispatch
+def instantiate_unscoped(ty: types.Type, arguments: TypeMap) -> types.Type:
     raise NotImplementedError()
 
 
-@instantiate.register(types.TypeVariable)
-@instantiate.register(types.BoolType)
-@instantiate.register(types.IntType)
-@instantiate.register(types.FloatType)
-@instantiate.register(types.SymbolType)
-@instantiate.register(types.EnumType)
-def instantiate_primitive(ty: types.Type, arguments) -> types.Type:
+@instantiate_unscoped.register(types.BoolType)
+@instantiate_unscoped.register(types.IntType)
+@instantiate_unscoped.register(types.FloatType)
+@instantiate_unscoped.register(types.SymbolType)
+@instantiate_unscoped.register(types.EnumType)
+def instantiate_unscoped_primitive(ty: types.Type, arguments) -> types.Type:
     return ty
 
 
-@instantiate.register
-def instantiate_tupletype(self: types.TupleType,
-                          arguments: TypeMap) -> types.Type:
+@instantiate_unscoped.register
+def instantiate_unscoped_typevariable(self: types.TypeVariable,
+                                      arguments: TypeMap) -> types.Type:
+    return arguments.get(self, self)
+
+
+@instantiate_unscoped.register
+def instantiate_unscoped_tupletype(self: types.TupleType,
+                                   arguments: TypeMap) -> types.Type:
     new_elements = []
     for elem in self.elements:
         if isinstance(elem, types.TypeVariable):
             new_elem = arguments.get(elem, elem)
-        elif isinstance(elem, types.ScopedType):
-            new_elem = instantiate_scoped(elem,
-                                          (arguments.get(t, t) if isinstance(
-                                              t, types.TypeVariable) else t
-                                           for t in elem.type_arguments))
         else:
             new_elem = instantiate(elem, arguments)
 
@@ -42,13 +55,13 @@ def instantiate_tupletype(self: types.TupleType,
     return types.TupleType(elements=tuple(new_elements))
 
 
-@instantiate.register
-def instantiate_arraytype(self: types.ArrayType, arguments: TypeMap):
+@instantiate_unscoped.register
+def instantiate_unscoped_arraytype(self: types.ArrayType, arguments: TypeMap):
     raise NotImplementedError()
 
 
-@instantiate.register
-def instantiate_slicetype(self: types.SliceType, arguments: TypeMap):
+@instantiate_unscoped.register
+def instantiate_unscoped_slicetype(self: types.SliceType, arguments: TypeMap):
     raise NotImplementedError()
 
 
@@ -62,9 +75,15 @@ def zipped_typevariables(self: types.ScopedType,
     return dict(zip(self.type_parameters, type_arguments))
 
 
-@instantiate.register
-def instantiate_uniontype(self: types.UnionType,
-                          arguments: Iterable[types.Type]) -> types.Type:
+@singledispatch
+def instantiate_scoped(self: types.ScopedType,
+                       arguments: Iterable[types.Type]) -> types.Type:
+    raise NotImplementedError()
+
+
+@instantiate_scoped.register
+def instantiate_scoped_uniontype(
+        self: types.UnionType, arguments: Iterable[types.Type]) -> types.Type:
     arguments = tuple(arguments)
     zipped = zipped_typevariables(self, arguments)
 
@@ -75,25 +94,12 @@ def instantiate_uniontype(self: types.UnionType,
         else:
             ty = variant_type
 
-        if isinstance(ty, types.ScopedType):
-            type_vars = (zipped.get(t, t) for t in ty.type_parameters
-                         if isinstance(t, types.TypeVariable))
-            new_variant = instantiate_scoped(ty, type_vars)
-        else:
-            new_variant = instantiate(ty, zipped)
-
-        new_variants.append((name, new_variant))
+        new_variants.append((name, instantiate(ty, zipped)))
 
     return types.UnionType(name=self.name,
                            variants=tuple(new_variants),
                            type_parameters=self.type_parameters,
                            type_arguments=arguments)
-
-
-@singledispatch
-def instantiate_scoped(self: types.ScopedType,
-                       arguments: Iterable[types.Type]) -> types.Type:
-    raise NotImplementedError()
 
 
 @instantiate_scoped.register
@@ -102,16 +108,10 @@ def instantiate_newtype(self: types.NewType,
     arguments = tuple(arguments)
     zipped = zipped_typevariables(self, arguments)
 
-    if not isinstance(self.inner_type, types.ScopedType):
-        inner = instantiate(self.inner_type, zipped)
-    else:
-        inner_typeargs = self.inner_type.type_arguments
-        inner = instantiate_scoped(self.inner_type,
-                                   (zipped.get(t, t) for t in inner_typeargs))
     return types.NewType(name=self.name,
                          type_parameters=self.type_parameters,
                          type_arguments=arguments,
-                         inner_type=inner)
+                         inner_type=instantiate(self.inner_type, zipped))
 
 
 @instantiate_scoped.register
@@ -127,14 +127,7 @@ def instantiate_structtype(self: types.StructType,
         else:
             ty = field_type
 
-        if isinstance(ty, types.ScopedType):
-            type_vars = (zipped.get(t, t) for t in ty.type_parameters
-                         if isinstance(t, types.TypeVariable))
-            new_variant = instantiate_scoped(ty, type_vars)
-        else:
-            new_variant = instantiate(ty, zipped)
-
-        new_fields.append((name, new_variant))
+        new_fields.append((name, instantiate(ty, zipped)))
 
     return types.StructType(name=self.name,
                             fields=tuple(new_fields),
