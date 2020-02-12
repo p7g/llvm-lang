@@ -15,7 +15,7 @@ class Type:
     pass
 
 
-class PrimitiveType:
+class PrimitiveType(Type):
     pass
 
 
