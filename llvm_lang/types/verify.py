@@ -19,8 +19,9 @@ def verify_always_valid(_self):
 
 @verify.register
 def verify_type_variable(self: types.TypeVariable):
-    if self.value is None:
-        raise TypeError(f"Type variable {self.name} is not defined")
+    # If there is a type variable left by the time we do verification, it must
+    # have been unbound (it was never substituted with a concrete type)
+    raise TypeError(f"Type variable {self.name} is not defined")
 
 
 @verify.register
