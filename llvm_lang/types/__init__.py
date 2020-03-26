@@ -6,10 +6,6 @@ from typing import Optional, Tuple, Union
 type_ = attr.s(auto_attribs=True, frozen=True)
 
 
-class TypeError(Exception):
-    pass
-
-
 @type_
 class Type:
     pass
@@ -112,6 +108,14 @@ class ScopedType(Type):
         if types:
             return "<" + ", ".join(map(str, types)) + ">"
         return ""
+
+
+@type_
+class TypeRef(ScopedType):
+    name: str
+
+    def __str__(self):
+        return f"{self.name}{super().__str__()}"
 
 
 @type_
@@ -261,7 +265,7 @@ class FunctionType(ScopedType):
 
     def __str__(self):
         name = "<anon>" if self.name is None else self.name
-        params = ", ".join(map(str, self.parameters))
+        params = ", ".join(f"{t} {name}" for name, t in self.parameters)
 
         return f"{self.return_type} {name}{super().__str__()}({params})"
 

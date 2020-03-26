@@ -3,7 +3,7 @@ from functools import singledispatch
 from operator import itemgetter
 
 from .. import types
-from . import TypeError
+from ..errors import ReferenceError, TypeError
 
 
 @singledispatch
@@ -21,7 +21,12 @@ def verify_always_valid(_self):
 def verify_type_variable(self: types.TypeVariable):
     # If there is a type variable left by the time we do verification, it must
     # have been unbound (it was never substituted with a concrete type)
-    raise TypeError(f"Type variable {self.name} is not defined")
+    raise ReferenceError(f"Type variable {self.name} is not defined")
+
+
+@verify.register
+def verify_type_ref(self: types.TypeRef):
+    raise ReferenceError(f"Type {self.name} is not defined")
 
 
 @verify.register
