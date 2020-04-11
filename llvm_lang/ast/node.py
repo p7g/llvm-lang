@@ -1,7 +1,13 @@
 import enum
+import operator as op
 
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from functools import partial
+from itertools import chain
 from typing import List, Optional
+
+from llvm_lang.types import Type
 
 __all__ = [
     'Op',
@@ -20,6 +26,7 @@ __all__ = [
     'IntegerLiteral',
     'FloatLiteral',
     'StringLiteral',
+    'TypedExpression',
     'Statement',
     'BreakStatement',
     'ContinueStatement',
@@ -30,13 +37,21 @@ __all__ = [
     'FunctionDeclaration',
     'VariableDeclaration',
     'TypeDeclaration',
+    'GenericTypeDeclaration',
     'NewTypeDeclaration',
     'StructTypeField',
     'StructTypeDeclaration',
     'EnumTypeDeclaration',
     'UnionTypeVariant',
+    'UnionTypeSymbolVariant',
+    'UnionTypeTupleVariant',
+    'UnionTypeStructVariant',
     'UnionTypeDeclaration',
 ]
+
+
+def indent(s: str) -> str:
+    return '\n'.join(map(partial(op.add, '    '), s.splitlines()))
 
 
 class Op(enum.Enum):
@@ -51,168 +66,338 @@ class Op(enum.Enum):
     deref = enum.auto()
     ref = enum.auto()
 
+    def __str__(self):
+        if self == self.assign:
+            return '='
+        if self == self.negate:
+            return '-'
+        if self == self.plus:
+            return '+'
+        if self == self.minus:
+            return '-'
+        if self == self.times:
+            return '*'
+        if self == self.divide:
+            return '/'
+        if self == self.index:
+            return '[]'
+        if self == self.field:
+            return '.'
+        if self == self.deref:
+            return '*'
+        if self == self.ref:
+            return '&'
 
-class Node:
-    pass
+
+def node(cls):
+    return dataclass(frozen=True)(cls)
+
+
+class Node(ABC):
+    @abstractmethod
+    def __str__(self) -> str:
+        ...
 
 
 class Program(Node, list):
+    def __str__(self):
+        return '\n'.join(map(str, self))
+
+
+@node
+class TypeExpression(Node, ABC):
     pass
 
 
-@dataclass
-class TypeExpression(Node):
-    pass
-
-
-@dataclass
+@node
 class NamedTypeExpression(TypeExpression):
     name: str
-    generic_arguments: Optional[List['TypeExpression']]
+    generic_arguments: Optional[List[TypeExpression]]
+
+    def __str__(self):
+        type_args = ''
+
+        if self.generic_arguments:
+            type_args = f'<{", ".join(map(str, self.generic_arguments))}>'
+
+        return f'{self.name}{type_args}'
 
 
-@dataclass
+@node
 class TupleTypeExpression(TypeExpression):
     elements: List[TypeExpression]
 
+    def __str__(self):
+        return f'({", ".join(map(str, self.elements))})'
 
-@dataclass
+
+@node
 class ArrayTypeExpression(TypeExpression):
     element_type: TypeExpression
     length: int
 
+    def __str__(self):
+        return f'{self.element_type}[{self.length}]'
 
-@dataclass
+
+@node
 class SliceTypeExpression(TypeExpression):
     element_type: TypeExpression
 
+    def __str__(self):
+        return f'{self.element_type}[]'
 
-@dataclass
-class Expression(Node):
+
+@node
+class Expression(Node, ABC):
     pass
 
 
-@dataclass
+@node
+class TypedExpression(Expression):
+    value: Expression
+    type: Type
+
+    def __str__(self):
+        return f'({self.value})::{self.type}'
+
+
+@node
 class BinaryOperation(Expression):
     lhs: Expression
     op: Op
     rhs: Expression
 
+    def __str__(self):
+        if self.op == Op.index:
+            return f'{self.lhs}[{self.rhs}]'
+        if self.op == Op.field:
+            return f'{self.lhs}.{self.rhs}'
+        return f'{self.lhs} {self.op} {self.rhs}'
 
-@dataclass
+
+@node
 class UnaryOperation(Expression):
     op: Op
     rhs: Expression
 
+    def __str__(self):
+        return f'{self.op} {self.rhs}'
 
-@dataclass
+
+@node
 class CallExpression(Expression):
     target: Expression
     args: List[Expression]
 
+    def __str__(self):
+        return f'{self.target}({", ".join(map(str, self.args))})'
 
-@dataclass
+
+@node
 class Identifier(Expression):
     name: str
 
+    def __str__(self):
+        return self.name
 
-@dataclass
+
+@node
 class IntegerLiteral(Expression):
     value: int
 
+    def __str__(self):
+        return str(self.value)
 
-@dataclass
+
+@node
 class FloatLiteral(Expression):
     value: float
 
+    def __str__(self):
+        return str(self.value)
 
-@dataclass
+
+@node
 class StringLiteral(Expression):
     value: str
 
+    def __str__(self):
+        return f'"{self.value}"'
 
-@dataclass
-class Statement(Node):
+
+@node
+class Statement(Node, ABC):
     pass
 
 
-@dataclass
+@node
 class BreakStatement(Statement):
     label: Optional[str]
 
+    def __str__(self):
+        return 'break;'
 
-@dataclass
+
+@node
 class ContinueStatement(Statement):
     label: Optional[str]
 
+    def __str__(self):
+        return 'continue;'
 
-@dataclass
+
+@node
 class ReturnStatement(Statement):
     value: Optional[Expression]
 
+    def __str__(self):
+        retval = ''
 
-@dataclass
+        if self.value is not None:
+            retval = f' {self.value}'
+
+        return f'return{retval};'
+
+
+@node
 class ExpressionStatement(Statement):
     expr: Expression
 
+    def __str__(self):
+        return f'{self.expr};'
 
-@dataclass
-class Declaration(Statement):
+
+@node
+class Declaration(Statement, ABC):
     name: str
 
 
-@dataclass
+@node
 class FunctionParameter(Node):
     name: str
     type: TypeExpression
 
+    def __str__(self):
+        return f'{self.type} {self.name}'
 
-@dataclass
+
+@node
 class VariableDeclaration(Declaration):
     type: TypeExpression
     initializer: Optional[Expression]
 
+    def __str__(self):
+        initializer = ''
 
-@dataclass
+        if self.initializer is not None:
+            initializer = f' = {self.initializer}'
+
+        return f'{self.type} {self.name}{initializer}'
+
+
+@node
 class FunctionDeclaration(Declaration):
     return_type: TypeExpression
     generic_parameters: Optional[List[str]]
     parameters: List[FunctionParameter]
     body: List[Statement]
 
+    def __str__(self):
+        params = ", ".join(map(str, self.parameters))
+        type_params = ''
 
-@dataclass
-class TypeDeclaration(Declaration):
+        if self.generic_parameters is not None:
+            type_params = f'<{", ".join(self.generic_parameters)}>'
+
+        body = indent('\n'.join(map(str, self.body)))
+
+        return f'{self.return_type} {self.name}{type_params}({params}) {{\n{body}\n}}'
+
+
+@node
+class TypeDeclaration(Declaration, ABC):
+    pass
+
+
+@node
+class EnumTypeDeclaration(TypeDeclaration):
+    variants: List[str]
+
+    def __str__(self):
+        body = indent('\n'.join(self.variants))
+        return f'enum {self.name} {{\n{body}\n}}'
+
+
+@node
+class GenericTypeDeclaration(TypeDeclaration, ABC):
     generic_parameters: Optional[List[str]]
 
+    def __str__(self):
+        if self.generic_parameters:
+            return f'<{", ".join(self.generic_parameters)}>'
+        return ''
 
-@dataclass
-class NewTypeDeclaration(TypeDeclaration):
+
+@node
+class NewTypeDeclaration(GenericTypeDeclaration):
     inner_type: TypeExpression
 
+    def __str__(self):
+        params = super().__str__()
+        return f'newtype {self.name}{params} = {self.inner_type}'
 
-@dataclass
+
+@node
 class StructTypeField(Node):
     name: str
     type: TypeExpression
 
+    def __str__(self):
+        return f'{self.type} {self.name}'
 
-@dataclass
-class StructTypeDeclaration(TypeDeclaration):
+
+@node
+class StructTypeDeclaration(GenericTypeDeclaration):
     fields: List[StructTypeField]
 
+    def __str__(self):
+        body = indent('\n'.join(map(str, self.fields)))
+        return f'struct {self.name}{super().__str__()} {{\n{body}\n}}'
 
-@dataclass
-class EnumTypeDeclaration(TypeDeclaration):
-    variants: List[str]
 
-
-@dataclass
-class UnionTypeVariant(Node):
+@node
+class UnionTypeVariant(Node, ABC):
     name: str
-    type: TypeExpression
 
 
-@dataclass
-class UnionTypeDeclaration(TypeDeclaration):
+@node
+class UnionTypeStructVariant(UnionTypeVariant):
+    fields: List[StructTypeField]
+
+    def __str__(self):
+        body = indent('\n'.join(map(str, self.fields)))
+        return f'{self.name} {{\n{body}\n}}'
+
+
+@node
+class UnionTypeTupleVariant(UnionTypeVariant):
+    elements: List[TypeExpression]
+
+    def __str__(self):
+        return f'{self.name}({", ".join(map(str, self.elements))})'
+
+
+@node
+class UnionTypeSymbolVariant(UnionTypeVariant):
+    def __str__(self):
+        return self.name
+
+
+@node
+class UnionTypeDeclaration(GenericTypeDeclaration):
     variants: List[UnionTypeVariant]
+
+    def __str__(self):
+        body = indent('\n'.join(map(str, self.variants)))
+        return f'union {self.name}{super().__str__()} {{\n{body}\n}}'

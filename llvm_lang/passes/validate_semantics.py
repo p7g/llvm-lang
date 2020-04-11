@@ -4,6 +4,7 @@ from .. import ast, errors
 
 class SemanticValidationVisitor(Visitor):
     def __init__(self):
+        super().__init__()
         self.loop_count = 0
         self.function_count = 0
 

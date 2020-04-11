@@ -113,6 +113,7 @@ class ScopedType(Type):
 @type_
 class TypeRef(ScopedType):
     name: str
+    type_arguments: Tuple[Type, ...]
 
     def __str__(self):
         return f"{self.name}{super().__str__()}"

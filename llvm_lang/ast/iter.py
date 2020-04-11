@@ -14,7 +14,8 @@ def iter_node_not_implemented(node):
 iter_node = singledispatch(iter_node_not_implemented)
 
 for typ in (node.Node, node.Expression, node.Statement, node.TypeExpression,
-            node.Declaration, node.TypeDeclaration):
+            node.Declaration, node.TypeDeclaration, node.UnionTypeVariant,
+            node.GenericTypeDeclaration):
     iter_node.register(typ)(iter_node_not_implemented)
 
 
@@ -23,6 +24,7 @@ for typ in (node.Node, node.Expression, node.Statement, node.TypeExpression,
 @iter_node.register(node.FloatLiteral)
 @iter_node.register(node.StringLiteral)
 @iter_node.register(node.EnumTypeDeclaration)
+@iter_node.register(node.UnionTypeSymbolVariant)
 def iter_node_no_fields(node):
     return []
 
@@ -102,10 +104,6 @@ def iter_node_functionparameter(node: node.FunctionParameter):
 def iter_node_functiondeclaration(node: node.FunctionDeclaration):
     yield node.return_type
 
-    if node.generic_parameters:
-        for typeparam in node.generic_parameters:
-            yield typeparam
-
     for param in node.parameters:
         yield param
 
@@ -123,10 +121,6 @@ def iter_node_variabledeclaration(node: node.VariableDeclaration):
 
 @iter_node.register
 def iter_node_newtypedeclaration(node: node.NewTypeDeclaration):
-    if node.generic_parameters:
-        for param in node.generic_parameters:
-            yield param
-
     yield node.inner_type
 
 
@@ -137,25 +131,24 @@ def iter_node_structtypefield(node: node.StructTypeField):
 
 @iter_node.register
 def iter_node_structtypedeclaration(node: node.StructTypeDeclaration):
-    if node.generic_parameters:
-        for param in node.generic_parameters:
-            yield param
-
     for field in node.fields:
         yield field
 
 
 @iter_node.register
-def iter_node_uniontypevariant(node: node.UnionTypeVariant):
-    yield node.type
+def iter_node_uniontypetuplevariant(node: node.UnionTypeTupleVariant):
+    for element_type in node.elements:
+        yield element_type
+
+
+@iter_node.register
+def iter_node_uniontypestructvariant(node: node.UnionTypeStructVariant):
+    for field in node.fields:
+        yield field
 
 
 @iter_node.register
 def iter_node_uniontypedeclaration(node: node.UnionTypeDeclaration):
-    if node.generic_parameters:
-        for param in node.generic_parameters:
-            yield param
-
     for variant in node.variants:
         yield variant
 

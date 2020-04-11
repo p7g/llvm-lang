@@ -59,7 +59,7 @@ t_LESS_THAN = r"<"
 t_GREATER_THAN = r">"
 
 t_SEMICOLON = r";"
-t_DOT = r"."
+t_DOT = r"\."
 t_COMMA = r","
 
 t_ignore = " \t"
@@ -116,7 +116,7 @@ def p_program_multiple(t):
 
 
 def p_declaration_function(t):
-    """declaration : type IDENTIFIER LEFT_PAREN parameter_list generic_params_opt RIGHT_PAREN LEFT_BRACE function_body RIGHT_BRACE"""  # noqa
+    """declaration : type IDENTIFIER LEFT_PAREN parameter_list_opt generic_params_opt RIGHT_PAREN LEFT_BRACE function_body RIGHT_BRACE"""  # noqa
     t[0] = ast.FunctionDeclaration(return_type=t[1],
                                    name=t[2],
                                    parameters=t[4],
@@ -138,10 +138,14 @@ def p_declaration_struct(t):
 
 def p_declaration_union(t):
     """declaration : UNION IDENTIFIER generic_params_opt LEFT_BRACE union_declaration_fields RIGHT_BRACE"""  # noqa
+    t[0] = ast.UnionTypeDeclaration(name=t[2],
+                                    generic_parameters=t[3],
+                                    variants=t[5])
 
 
 def p_declaration_enum(t):
     """declaration : ENUM IDENTIFIER LEFT_BRACE enum_declaration_fields RIGHT_BRACE"""  # noqa
+    t[0] = ast.EnumTypeDeclaration(name=t[2], variants=t[4])
 
 
 def p_parameter_list_list(t):
@@ -149,20 +153,27 @@ def p_parameter_list_list(t):
     t[0] = [ast.FunctionParameter(name=t[2], type=t[1])] + t[4]
 
 
-def p_parameter_list_empty(t):
-    """parameter_list : empty"""
-    t[0] = []
-
-
 def p_parameter_list_item(t):
-    """parameter_list : type IDENTIFIER comma_opt"""
+    """parameter_list : type IDENTIFIER"""
     t[0] = [ast.FunctionParameter(name=t[2], type=t[1])]
 
 
+def p_parameter_list_opt(t):
+    """parameter_list_opt : parameter_list
+                          | empty"""
+    t[0] = t[1]
+
+
 def p_argument_list(t):
-    """argument_list : expression comma_opt
-                     | expression COMMA argument_list
-                     | empty"""
+    """argument_list : expression
+                     | expression COMMA argument_list"""
+    t[0] = [t[1]] if t[1] is not None else [t[2]] + t[4]
+
+
+def p_argument_list_opt(t):
+    """argument_list_opt : argument_list
+                         | empty"""
+    t[0] = t[1]
 
 
 def p_function_body_empty(t):
@@ -182,10 +193,12 @@ def p_type_basic(t):
 
 def p_type_tuple(t):
     """type : tuple_type"""
+    t[0] = t[1]
 
 
 def p_tuple_type(t):
     """tuple_type : LEFT_PAREN type_list RIGHT_PAREN"""
+    t[0] = ast.TupleTypeExpression(elements=t[2])
 
 
 def p_generic_params(t):
@@ -211,7 +224,7 @@ def p_generic_args_opt(t):
 
 
 def p_type_list(t):
-    """type_list : type comma_opt"""
+    """type_list : type"""
     t[0] = [t[1]]
 
 
@@ -221,7 +234,7 @@ def p_type_list_list(t):
 
 
 def p_identifier_list(t):
-    """identifier_list : IDENTIFIER comma_opt"""
+    """identifier_list : IDENTIFIER"""
     t[0] = [t[1]]
 
 
@@ -230,43 +243,49 @@ def p_identifier_list_list(t):
     t[0] = [t[1]] + t[3]
 
 
-def p_comma_opt(t):
-    """comma_opt : COMMA
-                 | empty"""
-
-
 def p_struct_declaration_fields(t):
+    """struct_declaration_fields : type IDENTIFIER"""
+    t[0] = [ast.StructTypeField(name=t[2], type=t[1])]
+
+
+def p_struct_declaration_fields_repeat(t):
     """struct_declaration_fields : type IDENTIFIER struct_declaration_fields"""
     t[0] = [ast.StructTypeField(name=t[2], type=t[1])] + t[3]
 
 
-def p_struct_declaration_fields_empty(t):
-    """struct_declaration_fields : empty"""
-    t[0] = []
+def p_union_declaration_field_symbol(t):
+    """union_declaration_field : IDENTIFIER"""
+    t[0] = ast.UnionTypeSymbolVariant(name=t[1])
 
 
-def p_union_declaration_fields_symbol(t):
-    """union_declaration_fields : IDENTIFIER union_declaration_fields"""
+def p_union_declaration_field_tuple(t):
+    """union_declaration_field : IDENTIFIER tuple_type"""  # noqa
+    t[0] = ast.UnionTypeTupleVariant(name=t[1], elements=t[2].elements)
 
 
-def p_union_declaration_fields_tuple(t):
-    """union_declaration_fields : IDENTIFIER tuple_type union_declaration_fields"""  # noqa
+def p_union_declaration_field_struct(t):
+    """union_declaration_field : IDENTIFIER LEFT_BRACE struct_declaration_fields RIGHT_BRACE"""  # noqa
+    t[0] = ast.UnionTypeStructVariant(name=t[1], fields=t[3])
 
 
-def p_union_declaration_fields_struct(t):
-    """union_declaration_fields : IDENTIFIER LEFT_BRACE struct_declaration_fields RIGHT_BRACE union_declaration_fields"""  # noqa
+def p_union_declaration_fields(t):
+    """union_declaration_fields : union_declaration_field"""
+    t[0] = [t[1]]
 
 
-def p_union_declaration_fields_empty(t):
-    """union_declaration_fields : empty"""
+def p_union_declaration_fields_repeat(t):
+    """union_declaration_fields : union_declaration_field union_declaration_fields"""  # noqa
+    t[0] = [t[1]] + t[2]
 
 
 def p_enum_declaration_fields(t):
     """enum_declaration_fields : IDENTIFIER"""
+    t[0] = [t[1]]
 
 
-def p_enum_declaration_fields_empty(t):
-    """enum_declaration_fields : empty"""
+def p_enum_declaration_fields_repeat(t):
+    """enum_declaration_fields : IDENTIFIER enum_declaration_fields"""
+    t[0] = [t[1]] + t[2]
 
 
 def p_statement_break(t):
@@ -286,7 +305,7 @@ def p_statement_continue(t):
 def p_statement_return(t):
     """statement : RETURN expression SEMICOLON
                 | RETURN SEMICOLON"""
-    expr = t[2] if len(t) == 3 else None
+    expr = t[2] if len(t) == 4 else None
     t[0] = ast.ReturnStatement(value=expr)
 
 
