@@ -115,11 +115,20 @@ def p_program_multiple(t):
     t[0] = ast.Program([t[1]] + t[2])
 
 
+def p_declaration_variable(t):
+    """declaration : type IDENTIFIER EQUAL expression SEMICOLON
+                   | type IDENTIFIER SEMICOLON"""
+    init = None
+    if len(t) == 6:
+        init = t[4]
+    t[0] = ast.VariableDeclaration(type=t[1], name=t[2], initializer=init)
+
+
 def p_declaration_function(t):
     """declaration : type IDENTIFIER LEFT_PAREN parameter_list_opt generic_params_opt RIGHT_PAREN LEFT_BRACE function_body RIGHT_BRACE"""  # noqa
     t[0] = ast.FunctionDeclaration(return_type=t[1],
                                    name=t[2],
-                                   parameters=t[4],
+                                   parameters=t[4] or [],
                                    generic_parameters=t[5],
                                    body=t[8])
 
@@ -286,6 +295,11 @@ def p_enum_declaration_fields(t):
 def p_enum_declaration_fields_repeat(t):
     """enum_declaration_fields : IDENTIFIER enum_declaration_fields"""
     t[0] = [t[1]] + t[2]
+
+
+def p_statement_declaration(t):
+    """statement : declaration"""
+    t[0] = t[1]
 
 
 def p_statement_break(t):

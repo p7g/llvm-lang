@@ -293,7 +293,7 @@ class VariableDeclaration(Declaration):
         if self.initializer is not None:
             initializer = f' = {self.initializer}'
 
-        return f'{self.type} {self.name}{initializer}'
+        return f'{self.type} {self.name}{initializer};'
 
 
 @node

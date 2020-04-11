@@ -15,6 +15,8 @@ struct Greeter {
 }
 
 void greet(Greeter greeter) {
+    int a = 123;
+
     print("Hello, " + greeter.name + "!" + 123);
     # break;
     return "hello";
