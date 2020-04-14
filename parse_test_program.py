@@ -1,5 +1,8 @@
 from llvm_lang.compiler import compiler
 
+from llvm_lang import ast, types
+from llvm_lang.ast.map import MapAST
+
 test_program = '''
 union Result<T, U> {
     Ok(T)
@@ -27,9 +30,6 @@ ctx = compiler.compile(test_program)
 
 for typ in ctx.declared_types:
     print(str(typ.type))
-
-from llvm_lang import ast, types
-from llvm_lang.ast.map import MapAST
 
 
 class AddTypesToIntegers(MapAST):

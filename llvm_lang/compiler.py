@@ -6,7 +6,6 @@ from .passes import Pass
 from .passes.parse import parse
 from .passes.validate_semantics import validate_semantics
 from .passes.resolve_declared_types import resolve_declared_types
-from .passes.instantiate_type_expressions import instantiate_type_expressions
 
 
 @dataclass

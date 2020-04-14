@@ -1,10 +1,8 @@
 import enum
-import operator as op
 import textwrap
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from functools import partial
 from typing import List, Optional
 
 from llvm_lang.types import Type
@@ -314,7 +312,10 @@ class FunctionDeclaration(Declaration):
 
         body = indent('\n'.join(map(str, self.body)))
 
-        return f'{self.return_type} {self.name}{type_params}({params}) {{\n{body}\n}}'
+        return (
+            f'{self.return_type} {self.name}{type_params}({params}) '
+            f'{{\n{body}\n}}'
+        )
 
 
 @node
