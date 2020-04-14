@@ -1,10 +1,10 @@
 import enum
 import operator as op
+import textwrap
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import partial
-from itertools import chain
 from typing import List, Optional
 
 from llvm_lang.types import Type
@@ -49,9 +49,11 @@ __all__ = [
     'UnionTypeDeclaration',
 ]
 
+INDENTATION = ' ' * 4
+
 
 def indent(s: str) -> str:
-    return '\n'.join(map(partial(op.add, '    '), s.splitlines()))
+    return textwrap.indent(s, INDENTATION)
 
 
 class Op(enum.Enum):
@@ -66,7 +68,7 @@ class Op(enum.Enum):
     deref = enum.auto()
     ref = enum.auto()
 
-    def __str__(self):
+    def __str__(self):  # noqa C901
         if self == self.assign:
             return '='
         if self == self.negate:
