@@ -31,7 +31,7 @@ void greet(Greeter greeter) {
 ctx = compiler.compile(test_program)
 
 for typ in ctx.declared_types:
-    print(str(typ.type))
+    print(str(typ))
 
 
 class AddTypesToIntegers(MapAST):

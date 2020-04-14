@@ -12,10 +12,12 @@ class Visitor:
         return method(node)
 
     def generic_visit(self, node: Node):
+        results = []
         for i, child in enumerate(iter_node(node)):
             self._path.append(i)
-            yield self.visit(child)
+            results.append(self.visit(child))
             self._path.pop()
+        return results
 
     def path(self):
         return tuple(self._path)
