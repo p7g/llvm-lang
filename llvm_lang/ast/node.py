@@ -103,7 +103,7 @@ class Node(ABC):
 
 class Program(Node, list):
     def __str__(self):
-        return '\n'.join(map(str, self))
+        return '\n\n'.join(map(str, self))
 
 
 @node
