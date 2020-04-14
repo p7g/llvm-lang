@@ -17,6 +17,8 @@ struct Greeter {
     string name
 }
 
+int global_var = 0;
+
 void greet(Greeter greeter) {
     int a = 123;
 

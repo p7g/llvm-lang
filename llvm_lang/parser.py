@@ -115,13 +115,18 @@ def p_program_multiple(t):
     t[0] = ast.Program([t[1]] + t[2])
 
 
-def p_declaration_variable(t):
-    """declaration : type IDENTIFIER EQUAL expression SEMICOLON
-                   | type IDENTIFIER SEMICOLON"""
+def p_variable_declaration(t):
+    """variable_declaration : type IDENTIFIER EQUAL expression SEMICOLON
+                            | type IDENTIFIER SEMICOLON"""
     init = None
     if len(t) == 6:
         init = t[4]
     t[0] = ast.VariableDeclaration(type=t[1], name=t[2], initializer=init)
+
+
+def p_declaration_variable(t):
+    """declaration : variable_declaration"""
+    t[0] = t[1]
 
 
 def p_declaration_function(t):
@@ -297,8 +302,8 @@ def p_enum_declaration_fields_repeat(t):
     t[0] = [t[1]] + t[2]
 
 
-def p_statement_declaration(t):
-    """statement : declaration"""
+def p_statement_variable_declaration(t):
+    """statement : variable_declaration"""
     t[0] = t[1]
 
 
