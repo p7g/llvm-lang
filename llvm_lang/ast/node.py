@@ -312,10 +312,8 @@ class FunctionDeclaration(Declaration):
 
         body = indent('\n'.join(map(str, self.body)))
 
-        return (
-            f'{self.return_type} {self.name}{type_params}({params}) '
-            f'{{\n{body}\n}}'
-        )
+        return (f'{self.return_type} {self.name}{type_params}({params}) '
+                f'{{\n{body}\n}}')
 
 
 @node
