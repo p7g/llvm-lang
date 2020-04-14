@@ -4,5 +4,8 @@ format:
 lint:
 	pylama --skip llvm_lang/parsetab.py .
 
+test:
+	pytest
 
-.PHONY: format lint
+
+.PHONY: format lint test

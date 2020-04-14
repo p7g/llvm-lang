@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Dict
 
 from .. import ast, types, errors
+from llvm_lang.ast.map import MapAST
 
 from .resolve_declared_types import ResolveDeclaredTypesContext
 
@@ -35,7 +36,7 @@ class Scopes:
 primitive_types = ('Boolean', )
 
 
-class InstantiateTypeExpressionsVisitor(ast.Visitor):
+class InstantiateTypeExpressionsVisitor(MapAST):
     def __init__(self):
         super().__init__()
         self.instantiated_types = {}

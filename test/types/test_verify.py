@@ -1,6 +1,6 @@
 import pytest
 
-from llvm_lang import types
+from llvm_lang import types, errors
 from llvm_lang.types.verify import verify, verify_no_duplicate
 
 
@@ -9,7 +9,7 @@ def test_inttype_verify():
         assert verify(types.IntType(size)) is None, \
             f"IntType({size}) is valid"
 
-    with pytest.raises(types.TypeError):
+    with pytest.raises(errors.TypeError):
         verify(types.IntType(7))
 
 
@@ -18,7 +18,7 @@ def test_floattype_verify():
         assert verify(types.FloatType(size)) is None, \
             f"FloatType({size}) is valid"
 
-    with pytest.raises(types.TypeError):
+    with pytest.raises(errors.TypeError):
         verify(types.FloatType(128))
 
 
@@ -31,10 +31,10 @@ def test_symboltype_verify():
 
 
 def test_verify_no_duplicate():
-    with pytest.raises(types.TypeError):
+    with pytest.raises(errors.TypeError):
         verify_no_duplicate([1, 1, 2, 3], "%s")
 
-    with pytest.raises(types.TypeError):
+    with pytest.raises(errors.TypeError):
         verify_no_duplicate([
             types.StructType(name="test", fields=(("a", types.BoolType()), )),
             types.StructType(name="test", fields=(("a", types.BoolType()), )),
@@ -48,7 +48,7 @@ def test_enumtype_verify():
     assert verify(typ) is None, "EnumType without duplicate variants is ok"
 
     typ2 = types.EnumType("test_enum", variants=("A", "A"))
-    with pytest.raises(types.TypeError):
+    with pytest.raises(errors.TypeError):
         verify(typ2)
 
 
@@ -65,13 +65,13 @@ def test_scopedtype_verify():
                                             types.TypeVariable("T")),
                            fields=(("a", types.IntType(32)), ))
 
-    with pytest.raises(types.TypeError):
+    with pytest.raises(errors.TypeError):
         verify(typ)
 
     typ = types.StructType(name="unbound_type_variable",
                            fields=(("a", types.TypeVariable("T")), ))
 
-    with pytest.raises(types.TypeError):
+    with pytest.raises(errors.ReferenceError):
         verify(typ)
 
 
@@ -90,7 +90,7 @@ def test_uniontype_verify():
                               ("A", types.TupleType((types.IntType(16), ))),
                           ))
 
-    with pytest.raises(types.TypeError):
+    with pytest.raises(errors.TypeError):
         verify(typ)
 
 
@@ -109,7 +109,7 @@ def test_structtype_verify():
                                ("a", types.IntType(16)),
                            ))
 
-    with pytest.raises(types.TypeError):
+    with pytest.raises(errors.TypeError):
         verify(typ)
 
 
@@ -144,5 +144,5 @@ def test_functiontemplate_verify():
         parameters=(("a", types.IntType(8)), ("a", types.IntType(8))),
     )
 
-    with pytest.raises(types.TypeError):
+    with pytest.raises(errors.TypeError):
         verify(typ)
