@@ -12,6 +12,7 @@ __all__ = [
     'Node',
     'Program',
     'TypeExpression',
+    'InstantiatedTypeExpression',
     'NamedTypeExpression',
     'TupleTypeExpression',
     'ArrayTypeExpression',
@@ -63,8 +64,6 @@ class Op(enum.Enum):
     divide = enum.auto()
     index = enum.auto()
     field = enum.auto()
-    deref = enum.auto()
-    ref = enum.auto()
 
     def __str__(self):  # noqa C901
         if self == self.assign:
@@ -83,10 +82,6 @@ class Op(enum.Enum):
             return '[]'
         if self == self.field:
             return '.'
-        if self == self.deref:
-            return '*'
-        if self == self.ref:
-            return '&'
 
 
 def node(cls):
@@ -110,6 +105,14 @@ class TypeExpression(Node, ABC):
 
 
 @node
+class InstantiatedTypeExpression(TypeExpression):
+    type: Type
+
+    def __str__(self):
+        return str(self.type)
+
+
+@node
 class NamedTypeExpression(TypeExpression):
     name: str
     generic_arguments: Optional[List[TypeExpression]]
@@ -128,7 +131,12 @@ class TupleTypeExpression(TypeExpression):
     elements: List[TypeExpression]
 
     def __str__(self):
-        return f'({", ".join(map(str, self.elements))})'
+        elements = ', '.join(map(str, self.elements))
+
+        if len(self.elements) == 1:
+            elements += ', '
+
+        return f'({elements})'
 
 
 @node
@@ -191,7 +199,10 @@ class CallExpression(Expression):
     args: List[Expression]
 
     def __str__(self):
-        return f'{self.target}({", ".join(map(str, self.args))})'
+        target = self.target
+        if isinstance(target, TypedExpression):
+            target = target.value
+        return f'{target}({", ".join(map(str, self.args))})'
 
 
 @node
@@ -279,21 +290,16 @@ class FunctionParameter(Node):
     type: TypeExpression
 
     def __str__(self):
-        return f'{self.type} {self.name}'
+        return f'{self.name}: {self.type}'
 
 
 @node
 class VariableDeclaration(Declaration):
     type: TypeExpression
-    initializer: Optional[Expression]
+    initializer: Expression
 
     def __str__(self):
-        initializer = ''
-
-        if self.initializer is not None:
-            initializer = f' = {self.initializer}'
-
-        return f'{self.type} {self.name}{initializer};'
+        return f'let {self.name}: {self.type} = {self.initializer};'
 
 
 @node
@@ -346,7 +352,7 @@ class NewTypeDeclaration(GenericTypeDeclaration):
 
     def __str__(self):
         params = super().__str__()
-        return f'newtype {self.name}{params} = {self.inner_type}'
+        return f'newtype {self.name}{params} = {self.inner_type};'
 
 
 @node

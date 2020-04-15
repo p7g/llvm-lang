@@ -6,6 +6,8 @@ from .passes import Pass
 from .passes.parse import parse
 from .passes.validate_semantics import validate_semantics
 from .passes.resolve_declared_types import resolve_declared_types
+from .passes.annotate_expressions import annotate_expressions
+# from .passes.instantiate_type_expressions import instantiate_type_expressions
 
 
 @dataclass
@@ -20,6 +22,7 @@ passes = (
     parse,
     validate_semantics,
     resolve_declared_types,
+    annotate_expressions,
     # instantiate_type_expressions,
 )
 

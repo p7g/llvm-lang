@@ -22,7 +22,7 @@ def instantiate(ty: types.Type, arguments: TypeMap) -> types.Type:
 
 @singledispatch
 def instantiate_unscoped(ty: types.Type, arguments: TypeMap) -> types.Type:
-    raise NotImplementedError()
+    raise NotImplementedError(type(ty).__name__)
 
 
 @instantiate_unscoped.register(types.BoolType)

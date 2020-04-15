@@ -1,12 +1,9 @@
 from llvm_lang.compiler import compiler
 
-from llvm_lang import ast, types
-from llvm_lang.ast.map import MapAST
-
-test_program = '''
+test_program = '''\
 union Result<T, U> {
-    Ok(T)
-    Err(U)
+    Ok(T,)
+    Err(U,)
 }
 
 enum Test {
@@ -17,26 +14,24 @@ struct Greeter {
     string name
 }
 
-int global_var = 0;
+newtype Test2 = (int32, );
 
-void greet(Greeter greeter) {
-    int a = 123;
+let global_var: int64 = 0;
 
-    print("Hello, " + greeter.name + "!" + 123);
+void greet(greeter: Greeter) {
+    let a: int64 = 123;
+
+    # print("Hello, " + greeter.name + "!" + 123);
     # break;
     return "hello";
+}
+
+void main() {
+    let greeter: Greeter = "this is wrong";
+    let result: uint8[] = greet(greeter);
 }
 '''
 
 ctx = compiler.compile(test_program)
 
-for typ in ctx.declared_types:
-    print(str(typ))
-
-
-class AddTypesToIntegers(MapAST):
-    def visit_IntegerLiteral(self, node: ast.IntegerLiteral):
-        return ast.TypedExpression(value=node, type=types.IntType(32))
-
-
-print(AddTypesToIntegers().visit(ctx.ast_root))
+print(str(ctx.ast_root))

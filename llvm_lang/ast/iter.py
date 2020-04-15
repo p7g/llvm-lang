@@ -52,7 +52,7 @@ def iter_node_tupletypeexpression(node: node.TupleTypeExpression):
 @iter_node.register(node.SliceTypeExpression)
 def iter_node_arraytypeexpression(node: Union[node.ArrayTypeExpression,
                                               node.SliceTypeExpression]):
-    return node.element_type
+    yield node.element_type
 
 
 @iter_node.register
@@ -114,9 +114,7 @@ def iter_node_functiondeclaration(node: node.FunctionDeclaration):
 @iter_node.register
 def iter_node_variabledeclaration(node: node.VariableDeclaration):
     yield node.type
-
-    if node.initializer:
-        yield node.initializer
+    yield node.initializer
 
 
 @iter_node.register

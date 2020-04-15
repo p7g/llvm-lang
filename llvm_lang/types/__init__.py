@@ -3,6 +3,28 @@ import itertools
 
 from typing import Optional, Tuple, Union
 
+__all__ = (
+    'primitive_types',
+    'Type',
+    'PrimitiveType',
+    'IntType',
+    'FloatType',
+    'BoolType',
+    'SymbolType',
+    'VoidType',
+    'EnumType',
+    'TypeVariable',
+    'TypeRef',
+    'ScopedType',
+    'NewType',
+    'UnionType',
+    'StructType',
+    'TupleType',
+    'ArrayType',
+    'SliceType',
+    'FunctionType',
+)
+
 type_ = attr.s(auto_attribs=True, frozen=True)
 
 
@@ -20,9 +42,10 @@ class IntType(PrimitiveType):
     VALID_SIZES = (8, 16, 32, 64, 128)
 
     size: int
+    signed: bool
 
     def __str__(self):
-        return f"int{self.size}"
+        return f"{'' if self.signed else 'u'}int{self.size}"
 
 
 @type_
@@ -51,6 +74,12 @@ class SymbolType(PrimitiveType):
     """
     def __str__(self):
         return "symbol"
+
+
+@type_
+class VoidType(PrimitiveType):
+    def __str__(self):
+        return "void"
 
 
 @type_
@@ -90,6 +119,15 @@ class TypeVariable(Type):
 
 
 @type_
+class TypeRef(Type):
+    name: str
+    type_arguments: Tuple[Type, ...]
+
+    def __str__(self):
+        return f"{self.name}{super().__str__()}"
+
+
+@type_
 class ScopedType(Type):
     """A scoped type declares type variables that must be provided during
     instantiation"""
@@ -108,15 +146,6 @@ class ScopedType(Type):
         if types:
             return "<" + ", ".join(map(str, types)) + ">"
         return ""
-
-
-@type_
-class TypeRef(ScopedType):
-    name: str
-    type_arguments: Tuple[Type, ...]
-
-    def __str__(self):
-        return f"{self.name}{super().__str__()}"
 
 
 @type_
@@ -270,6 +299,20 @@ class FunctionType(ScopedType):
 
         return f"{self.return_type} {name}{super().__str__()}({params})"
 
+
+primitive_types = {
+    "bool": BoolType(),
+    "symbol": SymbolType(),
+    "void": VoidType(),
+}
+
+for size, signed in itertools.product(IntType.VALID_SIZES, (True, False)):
+    ty = IntType(size=size, signed=signed)
+    primitive_types[str(ty)] = ty
+
+for size in FloatType.VALID_SIZES:
+    ty = FloatType(size=size)
+    primitive_types[str(ty)] = ty
 
 # stretch goal: INTERFACE
 # aka typeclasses

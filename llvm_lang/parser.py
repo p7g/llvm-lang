@@ -12,6 +12,7 @@ reserved_words = {
     "return": "RETURN",
     "struct": "STRUCT",
     "union": "UNION",
+    "let": "LET",
 }
 
 tokens = tuple(reserved_words.values()) + (
@@ -33,6 +34,7 @@ tokens = tuple(reserved_words.values()) + (
     "RIGHT_BRACE",
     "LESS_THAN",
     "GREATER_THAN",
+    "COLON",
     "SEMICOLON",
     "COMMA",
     "DOT",
@@ -58,6 +60,7 @@ t_RIGHT_BRACE = r"\}"
 t_LESS_THAN = r"<"
 t_GREATER_THAN = r">"
 
+t_COLON = r":"
 t_SEMICOLON = r";"
 t_DOT = r"\."
 t_COMMA = r","
@@ -116,12 +119,8 @@ def p_program_multiple(t):
 
 
 def p_variable_declaration(t):
-    """variable_declaration : type IDENTIFIER EQUAL expression SEMICOLON
-                            | type IDENTIFIER SEMICOLON"""
-    init = None
-    if len(t) == 6:
-        init = t[4]
-    t[0] = ast.VariableDeclaration(type=t[1], name=t[2], initializer=init)
+    """variable_declaration : LET IDENTIFIER COLON type EQUAL expression SEMICOLON"""  # noqa
+    t[0] = ast.VariableDeclaration(type=t[4], name=t[2], initializer=t[6])
 
 
 def p_declaration_variable(t):
@@ -130,17 +129,19 @@ def p_declaration_variable(t):
 
 
 def p_declaration_function(t):
-    """declaration : type IDENTIFIER LEFT_PAREN parameter_list_opt generic_params_opt RIGHT_PAREN LEFT_BRACE function_body RIGHT_BRACE"""  # noqa
+    """declaration : type IDENTIFIER generic_params_opt LEFT_PAREN parameter_list_opt RIGHT_PAREN LEFT_BRACE function_body RIGHT_BRACE"""  # noqa
     t[0] = ast.FunctionDeclaration(return_type=t[1],
                                    name=t[2],
-                                   parameters=t[4] or [],
-                                   generic_parameters=t[5],
+                                   parameters=t[5] or [],
+                                   generic_parameters=t[3],
                                    body=t[8])
 
 
 def p_declaration_newtype(t):
-    """declaration : NEWTYPE IDENTIFIER EQUAL type SEMICOLON"""
-    t[0] = ast.NewTypeDeclaration(name=t[2], inner_type=t[4])
+    """declaration : NEWTYPE IDENTIFIER generic_params_opt EQUAL type SEMICOLON"""  # noqa
+    t[0] = ast.NewTypeDeclaration(name=t[2],
+                                  inner_type=t[5],
+                                  generic_parameters=t[3] or [])
 
 
 def p_declaration_struct(t):
@@ -163,13 +164,13 @@ def p_declaration_enum(t):
 
 
 def p_parameter_list_list(t):
-    """parameter_list : type IDENTIFIER COMMA parameter_list"""
-    t[0] = [ast.FunctionParameter(name=t[2], type=t[1])] + t[4]
+    """parameter_list : IDENTIFIER COLON type COMMA parameter_list"""
+    t[0] = [ast.FunctionParameter(name=t[1], type=t[3])] + t[4]
 
 
 def p_parameter_list_item(t):
-    """parameter_list : type IDENTIFIER"""
-    t[0] = [ast.FunctionParameter(name=t[2], type=t[1])]
+    """parameter_list : IDENTIFIER COLON type"""
+    t[0] = [ast.FunctionParameter(name=t[1], type=t[3])]
 
 
 def p_parameter_list_opt(t):
@@ -210,9 +211,45 @@ def p_type_tuple(t):
     t[0] = t[1]
 
 
-def p_tuple_type(t):
-    """tuple_type : LEFT_PAREN type_list RIGHT_PAREN"""
-    t[0] = ast.TupleTypeExpression(elements=t[2])
+def p_type_array(t):
+    # FIXME: support variable length
+    """type : type LEFT_BRACKET INTEGER RIGHT_BRACKET"""
+    t[0] = ast.ArrayTypeExpression(element_type=t[1], length=t[3])
+
+
+def p_type_slice(t):
+    """type : type LEFT_BRACKET RIGHT_BRACKET"""
+    t[0] = ast.SliceTypeExpression(element_type=t[1])
+
+
+def p_type_atom(t):
+    """type : LEFT_PAREN type RIGHT_PAREN"""
+    t[0] = t[2]
+
+
+def p_tuple_type_empty(t):
+    """tuple_type : LEFT_PAREN RIGHT_PAREN"""
+    t[0] = ast.TupleTypeExpression(elements=[])
+
+
+def p_tuple_type_single(t):
+    """tuple_type : LEFT_PAREN type COMMA RIGHT_PAREN"""
+    t[0] = ast.TupleTypeExpression(elements=[t[2]])
+
+
+def p_tuple_type_many(t):
+    """tuple_type : LEFT_PAREN type COMMA type tuple_type_list RIGHT_PAREN"""
+    t[0] = ast.TupleTypeExpression(elements=[t[2], t[4]] + t[5])
+
+
+def p_tuple_type_list_empty(t):
+    """tuple_type_list : empty"""
+    t[0] = []
+
+
+def p_tuple_type_list_contd(t):
+    """tuple_type_list : COMMA type tuple_type_list"""
+    t[0] = [t[2]] + t[3]
 
 
 def p_generic_params(t):
@@ -273,7 +310,9 @@ def p_union_declaration_field_symbol(t):
 
 
 def p_union_declaration_field_tuple(t):
-    """union_declaration_field : IDENTIFIER tuple_type"""  # noqa
+    # FIXME: tuple_type requires a trailing_comma when there's only one
+    # element, but in this case that should not be necessary
+    """union_declaration_field : IDENTIFIER tuple_type"""
     t[0] = ast.UnionTypeTupleVariant(name=t[1], elements=t[2].elements)
 
 

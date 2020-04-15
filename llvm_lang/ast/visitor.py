@@ -7,9 +7,13 @@ class Visitor:
         self._path = []
 
     def visit(self, node: Node):
-        typename = type(node).__name__
-        method = getattr(self, f'visit_{typename}', self.generic_visit)
-        return method(node)
+        for typ in type(node).__mro__:
+            typename = typ.__name__
+            method_name = f'visit_{typename}'
+            method = getattr(self, method_name, None)
+            if method:
+                return method(node)
+        return self.generic_visit(node)
 
     def generic_visit(self, node: Node):
         results = []
