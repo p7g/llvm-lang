@@ -42,7 +42,7 @@ class IntType(PrimitiveType):
     VALID_SIZES = (8, 16, 32, 64, 128)
 
     size: int
-    signed: bool
+    signed: bool = True
 
     def __str__(self):
         return f"{'' if self.signed else 'u'}int{self.size}"
