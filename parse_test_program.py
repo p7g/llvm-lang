@@ -1,24 +1,24 @@
 from llvm_lang.compiler import compiler
 
 test_program = '''\
-union Result<T, U> {
-    Ok(T,)
-    Err(U,)
-}
+# union Result<T, U> {
+#     Ok(T,)
+#     Err(U,)
+# }
 
 enum Test {
     VARIANT_A
 }
 
 struct Greeter {
-    string name
+    name: string
 }
 
-newtype Test2 = (int32, );
+newtype string = uint8[];
 
 let global_var: int64 = 0;
 
-void greet(greeter: Greeter) {
+function greet(greeter: Greeter): string {
     let a: int64 = 123;
 
     # print("Hello, " + greeter.name + "!" + 123);
@@ -26,7 +26,7 @@ void greet(greeter: Greeter) {
     return "hello";
 }
 
-void main() {
+function main(): void {
     let greeter: Greeter = "this is wrong";
     let result: uint8[] = greet(greeter);
 }

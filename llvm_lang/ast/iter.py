@@ -25,6 +25,7 @@ for typ in (node.Node, node.Expression, node.Statement, node.TypeExpression,
 @iter_node.register(node.StringLiteral)
 @iter_node.register(node.EnumTypeDeclaration)
 @iter_node.register(node.UnionTypeSymbolVariant)
+@iter_node.register(node.InstantiatedTypeExpression)
 def iter_node_no_fields(node):
     return []
 

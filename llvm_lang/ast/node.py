@@ -169,6 +169,10 @@ class TypedExpression(Expression):
     def __str__(self):
         return f'({self.value})::{self.type}'
 
+    def __post_init__(self):
+        if not isinstance(self.type, Type):
+            raise ValueError(repr(self))
+
 
 @node
 class BinaryOperation(Expression):
@@ -318,8 +322,9 @@ class FunctionDeclaration(Declaration):
 
         body = indent('\n'.join(map(str, self.body)))
 
-        return (f'{self.return_type} {self.name}{type_params}({params}) '
-                f'{{\n{body}\n}}')
+        return (
+            f'function {self.name}{type_params}({params}): {self.return_type} '
+            f'{{\n{body}\n}}')
 
 
 @node
@@ -361,7 +366,7 @@ class StructTypeField(Node):
     type: TypeExpression
 
     def __str__(self):
-        return f'{self.type} {self.name}'
+        return f'{self.name}: {self.type}'
 
 
 @node

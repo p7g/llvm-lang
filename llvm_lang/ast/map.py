@@ -51,6 +51,12 @@ class MapAST(ast.Visitor):
     def visit_ExpressionStatement(self, node: ast.ExpressionStatement):
         return ast.ExpressionStatement(expr=self.visit(node.expr))
 
+    def visit_VariableDeclaration(self, node: ast.VariableDeclaration):
+        return ast.VariableDeclaration(name=node.name,
+                                       type=self.visit(node.type),
+                                       initializer=self.visit(
+                                           node.initializer))
+
     def visit_FunctionParameter(self, node: ast.FunctionParameter):
         return ast.FunctionParameter(name=node.name,
                                      type=self.visit(node.type))

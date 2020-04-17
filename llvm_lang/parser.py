@@ -13,6 +13,7 @@ reserved_words = {
     "struct": "STRUCT",
     "union": "UNION",
     "let": "LET",
+    "function": "FUNCTION",
 }
 
 tokens = tuple(reserved_words.values()) + (
@@ -25,7 +26,6 @@ tokens = tuple(reserved_words.values()) + (
     "MINUS",
     "STAR",
     "SLASH",
-    "AMPERSAND",
     "LEFT_PAREN",
     "RIGHT_PAREN",
     "LEFT_BRACKET",
@@ -49,7 +49,6 @@ t_PLUS = r"\+"
 t_MINUS = r"-"
 t_STAR = r"\*"
 t_SLASH = r"/"
-t_AMPERSAND = r"&"
 
 t_LEFT_PAREN = r"\("
 t_RIGHT_PAREN = r"\)"
@@ -102,7 +101,7 @@ precedence = (
     ("left", "STAR", "SLASH"),
     ("left", "INDEX"),
     ("left", "DOT"),
-    ("right", "UMINUS", "DEREF", "AMPERSAND"),
+    ("right", "UMINUS"),
 )
 
 start = 'program'
@@ -129,12 +128,12 @@ def p_declaration_variable(t):
 
 
 def p_declaration_function(t):
-    """declaration : type IDENTIFIER generic_params_opt LEFT_PAREN parameter_list_opt RIGHT_PAREN LEFT_BRACE function_body RIGHT_BRACE"""  # noqa
-    t[0] = ast.FunctionDeclaration(return_type=t[1],
+    """declaration : FUNCTION IDENTIFIER generic_params_opt LEFT_PAREN parameter_list_opt RIGHT_PAREN COLON type LEFT_BRACE function_body RIGHT_BRACE"""  # noqa
+    t[0] = ast.FunctionDeclaration(return_type=t[8],
                                    name=t[2],
                                    parameters=t[5] or [],
                                    generic_parameters=t[3],
-                                   body=t[8])
+                                   body=t[10])
 
 
 def p_declaration_newtype(t):
@@ -295,13 +294,13 @@ def p_identifier_list_list(t):
 
 
 def p_struct_declaration_fields(t):
-    """struct_declaration_fields : type IDENTIFIER"""
-    t[0] = [ast.StructTypeField(name=t[2], type=t[1])]
+    """struct_declaration_fields : IDENTIFIER COLON type"""
+    t[0] = [ast.StructTypeField(name=t[1], type=t[3])]
 
 
 def p_struct_declaration_fields_repeat(t):
-    """struct_declaration_fields : type IDENTIFIER struct_declaration_fields"""
-    t[0] = [ast.StructTypeField(name=t[2], type=t[1])] + t[3]
+    """struct_declaration_fields : IDENTIFIER COLON type struct_declaration_fields"""  # noqa
+    t[0] = [ast.StructTypeField(name=t[1], type=t[3])] + t[3]
 
 
 def p_union_declaration_field_symbol(t):
@@ -424,11 +423,6 @@ def p_expression_call(t):
     t[0] = ast.CallExpression(t[1], t[3])
 
 
-def p_expression_address_of(t):
-    "expression : AMPERSAND expression"
-    t[0] = ast.UnaryOperation(ast.Op.ref, t[2])
-
-
 def p_expression_assignment_target(t):
     "expression : assignment_target"
     t[0] = t[1]
@@ -447,11 +441,6 @@ def p_assignment_target_field_access(t):
 def p_assignment_target_index(t):
     "assignment_target : expression LEFT_BRACKET expression RIGHT_BRACKET %prec INDEX"  # noqa
     t[0] = ast.BinaryOperation(t[1], ast.Op.index, t[3])
-
-
-def p_assignment_target_deref(t):
-    "assignment_target : STAR expression %prec DEREF"
-    t[0] = ast.UnaryOperation(ast.Op.deref, t[2])
 
 
 def p_expression_list_empty(t):

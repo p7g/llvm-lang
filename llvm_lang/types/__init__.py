@@ -147,7 +147,8 @@ class ScopedType(Type):
             return "<" + ", ".join(map(str, types)) + ">"
         return ""
 
-
+# FIXME: rename to typealias or something, I don't think this should actually
+# be a newtype kinda thing
 @type_
 class NewType(ScopedType):
     name: str
@@ -155,6 +156,9 @@ class NewType(ScopedType):
 
     def __str__(self):
         return f"{self.name}{super().__str__()}"
+
+    def __eq__(self, other):
+        return self.inner_type == other
 
 
 @type_
@@ -285,12 +289,12 @@ class FunctionType(ScopedType):
     }
 
     define i32 @__the_main(%"string[]" %argv) {
-    ret i32 0
+        ret i32 0
     }
     """
 
     name: Optional[str]
-    return_type: Optional[Type]  # `void` if None
+    return_type: Type  # `void` if None
     parameters: Tuple[Tuple[str, Type], ...]
 
     def __str__(self):

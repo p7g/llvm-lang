@@ -4,7 +4,7 @@ from typing import Dict
 from llvm_lang import ast, types, errors
 from llvm_lang.ast.map import MapAST
 from llvm_lang.types.instantiate import instantiate as instantiate_type
-from llvm_lang.utils import identity
+from llvm_lang.scopes import Scopes
 
 from .annotate_expressions import AnnotateExpressionsContext
 
@@ -19,37 +19,32 @@ class InstantiateTypeExpressionsVisitor(MapAST):
     def __init__(self, ctx: AnnotateExpressionsContext):
         super().__init__()
         self.ctx = ctx
+        self.scopes = Scopes(ctx.declared_types.items())
 
     def visit_NamedTypeExpression(self, node: ast.NamedTypeExpression):
-        if node.name in types.primitive_types:
-            if node.generic_arguments:
-                raise errors.TypeError(f'Type {node.name} is not generic')
-            return ast.InstantiatedTypeExpression(
-                type=types.primitive_types[node.name])
-        elif node.name in self.ctx.declared_types:
-            typ = self.ctx.declared_types[node.name]
-            if isinstance(typ, types.ScopedType):
-                generic_arguments = {
-                    name: self.visit(arg)
-                    for name, arg in zip(typ.type_parameters,
-                                         node.generic_arguments or [])
-                }
-            else:
-                generic_arguments = {}
-            return ast.InstantiatedTypeExpression(
-                type=instantiate_type(typ, generic_arguments))
-        raise errors.ReferenceError(f'type "{node.name}" not found')
+        typ = self.scopes.resolve_binding(node.name)
+
+        if isinstance(typ, types.ScopedType):
+            generic_arguments = {
+                name: self.visit(arg)
+                for name, arg in zip(typ.type_parameters,
+                                     node.generic_arguments or [])
+            }
+        else:
+            generic_arguments = {}
+        return ast.InstantiatedTypeExpression(
+            type=instantiate_type(typ, generic_arguments, self.scopes))
+
+    def visit_TypedExpression(self, node: ast.TypedExpression):
+        print(repr(node.type))
+        return ast.TypedExpression(value=self.visit(node.value),
+                                   type=instantiate_type(
+                                       node.type, {}, self.scopes))
 
     def visit_FunctionDeclaration(self, node: ast.FunctionDeclaration):
         if node.generic_parameters:
-            return node
+            raise NotImplementedError()
         return super().visit_FunctionDeclaration(node)
-
-    visit_NewTypeDeclaration = \
-        visit_StructTypeDeclaration = \
-        visit_UnionTypeDeclaration = \
-        visit_EnumTypeDeclaration = \
-        identity
 
     def generic_visit(self, node: ast.Node):
         if isinstance(node, ast.TypeExpression):
