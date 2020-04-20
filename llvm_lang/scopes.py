@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from typing import Generic, Iterable, Optional, Tuple, TypeVar
 
 from llvm_lang import errors
@@ -34,6 +35,12 @@ class Scopes(Generic[T_Scopes]):
 
     def pop_scope(self):
         self.scopes.pop()
+
+    @contextmanager
+    def new_scope(self):
+        self.push_scope()
+        yield
+        self.pop_scope()
 
     def add_binding(self, name: str, typ: T_Scopes):
         self.scopes[-1].add_binding(name, typ)

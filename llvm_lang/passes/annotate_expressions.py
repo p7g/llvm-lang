@@ -3,7 +3,7 @@ from typing import Dict
 
 from llvm_lang import ast, types
 from llvm_lang.ast.map import MapAST
-from llvm_lang.ast.types import infer_type
+from llvm_lang.ast.types import generate_type, infer_type
 from llvm_lang.scopes import Scopes
 
 from .resolve_declared_types import ResolveDeclaredTypesContext
@@ -18,27 +18,25 @@ class AnnotateExpressionsContext:
 class AnnotateExpressionsVisitor(MapAST):
     def __init__(self, ctx: ResolveDeclaredTypesContext):
         self.ctx = ctx
-        self.scopes = Scopes()
+        self.scopes = Scopes[types.Type]()
 
     def visit_FunctionDeclaration(self, node: ast.FunctionDeclaration):
         self.scopes.add_binding(node.name, self.ctx.declared_types[node.name])
-        self.scopes.push_scope()
-        result = super().visit_FunctionDeclaration(node)
-        self.scopes.pop_scope()
+        with self.scopes.new_scope():
+            result = super().visit_FunctionDeclaration(node)
         return result
 
     def visit_VariableDeclaration(self, node: ast.VariableDeclaration):
         initializer = super().visit(node.initializer)
-        self.scopes.add_binding(node.name, node.type)
+        self.scopes.add_binding(node.name, generate_type(node.type))
         return ast.VariableDeclaration(name=node.name,
                                        type=node.type,
                                        initializer=initializer)
 
     # FIXME: add other statements
     # def visit_IfStatement(self, node: ast.IfStatement):
-    #     self.scopes.push_scope()
-    #     super().visit_IfStatement(node)
-    #     self.scopes.pop_scope()
+    #     with self.scopes.new_scope():
+    #         super().visit_IfStatement(node)
 
     def visit_Expression(self, node: ast.Expression):
         return ast.TypedExpression(value=node,
