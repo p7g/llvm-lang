@@ -1,5 +1,6 @@
 from functools import singledispatch
 from operator import itemgetter
+from typing import Optional
 
 from llvm_lang import ast, types, errors
 from llvm_lang.ast import Op
@@ -38,49 +39,63 @@ def generate_type_slicetypeexpression(node: ast.SliceTypeExpression):
 
 
 @singledispatch
-def infer_type(node: ast.Expression, scopes: Scopes) -> types.Type:
+def infer_type(node: ast.Expression,
+               scopes: Scopes,
+               hint: Optional[types.Type] = None) -> types.Type:
     '''Infer the type of an expression'''
     raise NotImplementedError()
 
 
 @infer_type.register
-def infer_type_typedexpression(node: ast.TypedExpression,
-                               scopes: Scopes) -> types.Type:
+def infer_type_typedexpression(
+        node: ast.TypedExpression,
+        scopes: Scopes,
+        hint: Optional[types.Type] = None) -> types.Type:
     return node.type
 
 
 @infer_type.register
-def infer_type_identifier(node: ast.Identifier, scopes: Scopes) -> types.Type:
+def infer_type_identifier(node: ast.Identifier,
+                          scopes: Scopes,
+                          hint: Optional[types.Type] = None) -> types.Type:
     return scopes.resolve_binding(node.name)
 
 
 @infer_type.register
 def infer_type_integerliteral(node: ast.IntegerLiteral,
-                              scopes: Scopes) -> types.Type:
+                              scopes: Scopes,
+                              hint: Optional[types.Type] = None) -> types.Type:
+    if isinstance(hint, types.IntType):
+        return hint
     return p['int64']
 
 
 @infer_type.register
 def infer_type_floatliteral(node: ast.FloatLiteral,
-                            scopes: Scopes) -> types.Type:
+                            scopes: Scopes,
+                            hint: Optional[types.Type] = None) -> types.Type:
+    if isinstance(hint, types.FloatType):
+        return hint
     return p['float64']
 
 
 @infer_type.register
 def infer_type_stringliteral(node: ast.StringLiteral,
-                             scopes: Scopes) -> types.Type:
+                             scopes: Scopes,
+                             hint: Optional[types.Type] = None) -> types.Type:
     return types.ArrayType(length=len(node.value.encode('utf-8')),
                            element_type=p['uint8'])
 
 
 @infer_type.register
-def infer_type_binaryoperation(
-        node: ast.BinaryOperation,  # noqa C901
-        scopes: Scopes) -> types.Type:
-    lhs_type = infer_type(node.lhs)
+def infer_type_binaryoperation(  # noqa C901
+        node: ast.BinaryOperation,
+        scopes: Scopes,
+        hint: Optional[types.Type] = None) -> types.Type:
+    lhs_type = infer_type(node.lhs, scopes)
 
     if node.op in (Op.plus, Op.minus, Op.times, Op.divide):
-        if lhs_type != infer_type(node.rhs):
+        if lhs_type != infer_type(node.rhs, scopes):
             raise errors.TypeError(
                 f'Both sides of "{node.op}" must have the same type')
         if not isinstance(lhs_type, (types.IntType, types.FloatType)):
@@ -100,7 +115,7 @@ def infer_type_binaryoperation(
     elif node.op == Op.index:
         if not isinstance(lhs_type, (types.ArrayType, types.SliceType)):
             raise errors.TypeError(f'Type {lhs_type} cannot be indexed')
-        rhs_type = infer_type(node.rhs)
+        rhs_type = infer_type(node.rhs, scopes)
         if not isinstance(rhs_type, types.IntType):
             raise errors.TypeError(f'Cannot index {lhs_type} with {rhs_type}')
         return lhs_type.element_type
@@ -116,19 +131,21 @@ def infer_type_binaryoperation(
 
 @infer_type.register
 def infer_type_unaryoperation(node: ast.UnaryOperation,
-                              scopes: Scopes) -> types.Type:
-    return infer_type(node.rhs)
+                              scopes: Scopes,
+                              hint: Optional[types.Type] = None) -> types.Type:
+    return infer_type(node.rhs, scopes)
 
 
 @infer_type.register
 def infer_type_callexpression(node: ast.CallExpression,
-                              scopes: Scopes) -> types.Type:
-    fn_type = infer_type(node.target)
+                              scopes: Scopes,
+                              hint: Optional[types.Type] = None) -> types.Type:
+    fn_type = infer_type(node.target, scopes)
 
     if not isinstance(fn_type, types.FunctionType):
         raise errors.TypeError(f'{node.target} is not a function')
 
-    arg_types = list(map(infer_type, node.args))
+    arg_types = list(map(lambda arg: infer_type(arg, scopes), node.args))
 
     for arg, param in zip(arg_types, map(itemgetter(1), fn_type.parameters)):
         if arg != param:

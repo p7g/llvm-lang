@@ -1,4 +1,5 @@
 import attr
+import functools
 import itertools
 
 from typing import Optional, Tuple, Union
@@ -25,7 +26,11 @@ __all__ = (
     'FunctionType',
 )
 
-type_ = attr.s(auto_attribs=True, frozen=True)
+
+def type_(cls=None, **kwargs):
+    if cls is not None:
+        return attr.s(auto_attribs=True, frozen=True, **kwargs)(cls)
+    return functools.partial(type_, **kwargs)
 
 
 @type_
@@ -124,7 +129,8 @@ class TypeRef(Type):
     type_arguments: Tuple[Type, ...]
 
     def __str__(self):
-        return f"{self.name}{super().__str__()}"
+        args = ", ".join(map(str, self.type_arguments))
+        return f"{self.name}{args}"
 
 
 @type_
@@ -147,9 +153,10 @@ class ScopedType(Type):
             return "<" + ", ".join(map(str, types)) + ">"
         return ""
 
+
 # FIXME: rename to typealias or something, I don't think this should actually
 # be a newtype kinda thing
-@type_
+@type_(eq=False)
 class NewType(ScopedType):
     name: str
     inner_type: Type
@@ -246,7 +253,7 @@ class TupleType(Type):
         return "(" + ", ".join(map(str, self.elements)) + trailing_comma + ")"
 
 
-@type_
+@type_(eq=False)
 class ArrayType(Type):
     """
     string[2] strings = ["abc", "123"];
@@ -264,6 +271,14 @@ class ArrayType(Type):
 
     def __str__(self):
         return f"{self.element_type}[{self.length}]"
+
+    def __eq__(self, other):
+        if isinstance(other, SliceType):
+            return self.element_type == other.element_type
+        elif isinstance(other, ArrayType):
+            return self.element_type == other.element_type \
+                and self.length == other.length
+        return NotImplemented
 
 
 @type_

@@ -6,10 +6,6 @@ test_program = '''\
 #     Err(U,)
 # }
 
-enum Test {
-    VARIANT_A
-}
-
 struct Greeter {
     name: string
 }

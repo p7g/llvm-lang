@@ -17,23 +17,21 @@ class CheckTypesVisitor(Visitor):
     def __init__(self, ctx: InstantiateTypeExpressionsContext):
         super().__init__()
         self.ctx = ctx
-        self.function_stack: List[types.FunctionType] = []
+        self.function_stack: List[ast.FunctionDeclaration] = []
 
     @property
     def current_function(self):
         return self.function_stack[-1]
 
     def visit_FunctionDeclaration(self, node: ast.FunctionDeclaration):
-        fn_type = self.ctx.declared_types[node.name]
-        assert isinstance(fn_type, types.FunctionType)
-        self.function_stack.append(fn_type)
+        self.function_stack.append(node)
         super().generic_visit(node)
         self.function_stack.pop()
 
     def visit_ReturnStatement(self, node: ast.ReturnStatement):
         if node.value is not None:
             assert isinstance(node.value, ast.TypedExpression)
-            if node.value.type != self.current_function.return_type:
+            if node.value.type != self.current_function.return_type.type:
                 raise errors.TypeError(
                     f'Returned value {node.value} is not '
                     f'assignable to type {self.current_function.return_type}')
@@ -70,7 +68,6 @@ class CheckTypesVisitor(Visitor):
 
 
 def check_types(ctx: InstantiateTypeExpressionsContext) -> CheckTypesContext:
-    print(repr(ctx.ast_root))
     CheckTypesVisitor(ctx).visit(ctx.ast_root)
     return CheckTypesContext(ast_root=ctx.ast_root,
                              declared_types=ctx.declared_types)

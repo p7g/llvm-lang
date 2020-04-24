@@ -3,7 +3,6 @@ from typing import Generic, Iterable, Optional, Tuple, TypeVar
 
 from llvm_lang import errors
 
-
 T_Scope = TypeVar('T_Scope')
 
 

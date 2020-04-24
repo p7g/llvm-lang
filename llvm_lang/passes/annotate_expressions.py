@@ -27,8 +27,12 @@ class AnnotateExpressionsVisitor(MapAST):
         return result
 
     def visit_VariableDeclaration(self, node: ast.VariableDeclaration):
-        initializer = super().visit(node.initializer)
-        self.scopes.add_binding(node.name, generate_type(node.type))
+        variable_type = generate_type(node.type)
+        initializer = ast.TypedExpression(value=node.initializer,
+                                          type=infer_type(node.initializer,
+                                                          self.scopes,
+                                                          hint=variable_type))
+        self.scopes.add_binding(node.name, variable_type)
         return ast.VariableDeclaration(name=node.name,
                                        type=node.type,
                                        initializer=initializer)

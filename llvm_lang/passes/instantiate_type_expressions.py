@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Dict
 
-from llvm_lang import ast, types, errors
+from llvm_lang import ast, types
 from llvm_lang.ast.map import MapAST
 from llvm_lang.types.instantiate import instantiate as instantiate_type
 from llvm_lang.scopes import Scopes
@@ -36,7 +36,6 @@ class InstantiateTypeExpressionsVisitor(MapAST):
             type=instantiate_type(typ, generic_arguments, self.scopes))
 
     def visit_TypedExpression(self, node: ast.TypedExpression):
-        print(repr(node.type))
         return ast.TypedExpression(value=self.visit(node.value),
                                    type=instantiate_type(
                                        node.type, {}, self.scopes))
